@@ -77,7 +77,7 @@ Load it in Chrome:
 8. Click `Use selected text`.
 9. Review the imported text, then click `Create review session`.
 10. Click the comment button on any review block.
-11. Type the comment directly under that block, or use `Dictate` when Chrome offers voice recognition. Dictation keeps listening until you click `Stop`.
+11. Type the comment directly under that block, or use `Dictate` when Chrome offers voice recognition. Dictation keeps listening until you click `Stop`, and the app does lightweight cleanup for reviewed-block terms and basic Chinese punctuation.
 12. Click `Add comment`.
 
 The side panel imports only the text currently selected by the user in the active ChatGPT or Claude tab. It does not scrape the whole conversation.
@@ -87,6 +87,8 @@ The primary review flow asks only for the comment. The app generates a short tit
 If `Dictate` needs microphone permission, the extension opens an `Enable microphone dictation` tab. Allow microphone access there, return to the side panel, and click `Dictate` again.
 
 `Dictate` uses Chrome's browser speech recognition. If macOS or Chrome routes Chrome's microphone input to an iPhone Continuity microphone, the extension cannot force it back to the Mac microphone from Web Speech code. Change the input source in macOS or Chrome settings, then click `Dictate` again.
+
+Speech cleanup is intentionally conservative. It can correct obvious reviewed-block terms such as `face0a` -> `Phase 0A` when the selected block contains `Phase 0A`, but you should still read the comment before clicking `Add comment`.
 
 After building the revision pack, copy or export it and paste it back into ChatGPT or Claude manually.
 

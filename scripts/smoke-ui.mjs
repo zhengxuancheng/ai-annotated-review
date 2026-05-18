@@ -238,8 +238,16 @@ try {
       }
     });
     window.__speechRecognitionInstances = [];
+    window.__speechPhraseHints = [];
     window.__speechRecognitionStartCount = 0;
     window.__speechRecognitionStopCount = 0;
+    class FakeSpeechRecognitionPhrase {
+      constructor(phrase, boost) {
+        this.phrase = phrase;
+        this.boost = boost;
+        window.__speechPhraseHints.push({ phrase, boost });
+      }
+    }
     class FakeSpeechRecognition {
       continuous = false;
       interimResults = false;
@@ -265,6 +273,10 @@ try {
       configurable: true,
       value: FakeSpeechRecognition
     });
+    Object.defineProperty(window, "SpeechRecognitionPhrase", {
+      configurable: true,
+      value: FakeSpeechRecognitionPhrase
+    });
     const OriginalFakeSpeechRecognition = FakeSpeechRecognition;
     const TrackedSpeechRecognition = class TrackedSpeechRecognition extends OriginalFakeSpeechRecognition {
       constructor() {
@@ -277,7 +289,7 @@ try {
   });
   await dictationPage.goto(URL, { waitUntil: "networkidle" });
   await dictationPage.getByText("AI Annotated Review Demo Report").first().waitFor();
-  const dictationBlock = dictationPage.locator(".review-block").nth(2);
+  const dictationBlock = dictationPage.locator(".review-block").nth(4);
   await dictationBlock.locator(".add-block-button").click();
   const dictationComposer = dictationBlock.locator(".inline-composer");
   await dictationComposer.waitFor();
@@ -288,12 +300,18 @@ try {
     return {
       continuous: instance?.continuous,
       interimResults: instance?.interimResults,
-      startCount: window.__speechRecognitionStartCount
+      startCount: window.__speechRecognitionStartCount,
+      phraseHints: window.__speechPhraseHints
     };
   });
   assert(recognitionConfig.continuous === true, "Dictation must request continuous recognition.");
   assert(recognitionConfig.interimResults === true, "Dictation must request interim recognition results.");
   assert(recognitionConfig.startCount === 1, `expected one recognition start, got ${recognitionConfig.startCount}`);
+  assert(
+    recognitionConfig.phraseHints.some((hint) => hint.phrase === "ChatGPT") &&
+      recognitionConfig.phraseHints.some((hint) => hint.phrase === "SDK"),
+    "Dictation must pass review-block terms as speech phrase hints."
+  );
   await dictationPage.evaluate(() => {
     const instance = window.__speechRecognitionInstances[0];
     const resultFor = (text) => ({ isFinal: true, 0: { transcript: text } });
@@ -340,6 +358,7 @@ try {
         voiceDictationKeepsMultipleSegments: true,
         voiceDictationRestartsAfterPause: true,
         voiceDictationStopsOnlyByUser: true,
+        voicePhraseHintsUseBlockContext: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
         consoleErrors: errorMessages.length + standaloneErrorMessages.length

@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 17:32 CST
+Latest audit refresh: 2026-05-18 17:48 CST
 
 ## Commands Run
 
@@ -69,6 +69,7 @@ Results:
 - Copy toast update deployed on 2026-05-18 with Worker version ID `f6eb819c-9fa0-4d97-a1f9-52cc8bdad0be`. Remote smoke passed; `/app` contains `copy-toast`, `Copied`, and `已复制`, and no longer contains the long `Copy revision request` button label.
 - Extension voice-input permission update verification passed on 2026-05-18: `smoke:ui` now simulates a Chrome extension side panel with microphone permission still at `prompt`, clicks `Dictate`, verifies that `voice-permission.html` opens, and verifies speech recognition does not start before extension microphone permission is granted. `verify:adapters` verifies the built extension contains `dist/voice-permission.html`. Production Worker redeploy succeeded with version ID `9e0e07cc-d94e-4b0c-a3b2-2e7381f1c654`; remote smoke passed and `/app` contains the updated microphone permission message.
 - Continuous dictation update verification passed on 2026-05-18: the first `npm run smoke:ui` red test failed on `Dictation must request continuous recognition`, then the implementation was updated and `smoke:ui` passed with `voiceDictationIsContinuous`, `voiceDictationKeepsMultipleSegments`, `voiceDictationRestartsAfterPause`, and `voiceDictationStopsOnlyByUser`. Full `npm run verify` passed under Codex's bundled Node v24.14.0. Production Worker redeploy succeeded with version ID `039be1a2-7875-4bfe-ac9f-006163d8ad67`; remote smoke passed, and `/app` contains the updated listening/stop strings.
+- Speech cleanup update verification passed on 2026-05-18: `apps/chatgpt-app/web/test/speechPostProcessing.test.ts` first failed because the module did not exist, then passed with tests for `Phase 0A` phrase hints, `face0a` / `face01` normalization, Chinese punctuation restoration, and the no-`Phase` false-positive guard. Full `npm run verify` passed with 5 test files and 13 tests. `smoke:ui` now verifies `voicePhraseHintsUseBlockContext`. Production Worker redeploy succeeded with version ID `09402df3-4c65-412c-a053-631f193cdaee`; remote smoke passed, and `/app` contains `SpeechRecognitionPhrase` and `Phase 0A`.
 
 ## Skill-Driven Audit Refresh
 

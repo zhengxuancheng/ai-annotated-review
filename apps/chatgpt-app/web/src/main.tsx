@@ -57,6 +57,13 @@ import {
   readActiveTabSelection,
   requestBrowserExtensionMicrophonePermission
 } from "./hostIntegrations.js";
+import {
+  buildSpeechPhraseHints,
+  createDictationContext,
+  normalizeDictatedComment,
+  type DictationContext,
+  type SpeechPhraseHint
+} from "./speechPostProcessing.js";
 import "./styles.css";
 
 type SendState = "idle" | "sent" | "copied" | "fallback" | "error";
@@ -656,15 +663,27 @@ function InlineAnnotationComposer({
   onCancel: () => void;
   onSubmit: () => void;
 }) {
+  const dictationContext = useMemo(
+    () =>
+      createDictationContext({
+        text: block.text,
+        markdown: block.markdown,
+        headingPath: block.headingPath
+      }),
+    [block]
+  );
   const draftRef = useRef(value);
   useEffect(() => {
     draftRef.current = value;
   }, [value]);
   const dictation = useSpeechDictation((transcript) => {
-    const nextValue = appendTranscript(draftRef.current, transcript);
+    const nextValue = appendTranscript(
+      draftRef.current,
+      normalizeDictatedComment(transcript, dictationContext)
+    );
     draftRef.current = nextValue;
     onChange(nextValue);
-  });
+  }, dictationContext);
   const canSubmit = value.trim().length > 0;
 
   function handleDraftChange(nextValue: string) {
@@ -718,6 +737,7 @@ type SpeechRecognitionConstructor = new () => {
   continuous: boolean;
   interimResults: boolean;
   maxAlternatives: number;
+  phrases?: unknown[];
   onend: (() => void) | null;
   onerror: ((event: { error?: string }) => void) | null;
   onresult:
@@ -734,7 +754,9 @@ type SpeechRecognitionConstructor = new () => {
   stop: () => void;
 };
 
-function useSpeechDictation(onTranscript: (transcript: string) => void): {
+type SpeechRecognitionPhraseConstructor = new (phrase: string, boost: number) => unknown;
+
+function useSpeechDictation(onTranscript: (transcript: string) => void, context: DictationContext): {
   supported: boolean;
   listening: boolean;
   message: string | null;
@@ -800,6 +822,7 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
     next.continuous = true;
     next.interimResults = true;
     next.maxAlternatives = 1;
+    applySpeechPhraseHints(next, buildSpeechPhraseHints(context));
     next.onresult = (event) => {
       let finalTranscript = "";
       let interimTranscript = "";
@@ -905,6 +928,26 @@ function getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null 
     webkitSpeechRecognition?: SpeechRecognitionConstructor;
   };
   return candidateWindow.SpeechRecognition ?? candidateWindow.webkitSpeechRecognition ?? null;
+}
+
+function getSpeechRecognitionPhraseConstructor(): SpeechRecognitionPhraseConstructor | null {
+  const candidateWindow = window as Window & {
+    SpeechRecognitionPhrase?: SpeechRecognitionPhraseConstructor;
+  };
+  return candidateWindow.SpeechRecognitionPhrase ?? null;
+}
+
+function applySpeechPhraseHints(
+  recognition: InstanceType<SpeechRecognitionConstructor>,
+  hints: SpeechPhraseHint[]
+) {
+  const Phrase = getSpeechRecognitionPhraseConstructor();
+  if (!Phrase || hints.length === 0) return;
+  try {
+    recognition.phrases = hints.map((hint) => new Phrase(hint.phrase, hint.boost));
+  } catch {
+    // Phrase biasing is experimental; dictation must still work when the browser rejects it.
+  }
 }
 
 function appendTranscript(current: string, transcript: string): string {
