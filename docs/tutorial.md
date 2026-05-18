@@ -48,12 +48,12 @@ Review workflow:
 4. Click a block's comment button.
 5. Type the comment directly below that block, or use `Dictate` when available.
 6. Click `Add comment`.
-8. Create at least three annotations.
-9. Keep revision-driving comments confirmed, or change status later in the annotations panel.
-10. Click `Build pack`.
-11. Review the generated prompt.
-12. Click `Copy revision request` or `Export pack`.
-13. Paste the revision request into ChatGPT, Claude, Codex, or Claude Code yourself.
+7. Create at least three annotations.
+8. Keep revision-driving comments confirmed, or change status later in the annotations panel.
+9. Click `Build pack`; the app scrolls to the generated revision pack.
+10. Review the generated prompt.
+11. Click `Copy revision request` to copy immediately, or click `Export pack`.
+12. Paste the revision request into ChatGPT, Claude, Codex, or Claude Code yourself.
 
 The public web app does not silently send anything back to an AI service.
 

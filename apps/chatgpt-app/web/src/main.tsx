@@ -73,6 +73,7 @@ function App() {
   const initialWidgetState = getInitialWidgetState();
   const restored = restoreSessionFromWidgetState(initialSession, initialWidgetState);
   const activeHostSessionId = useRef(restored.id);
+  const revisionSectionRef = useRef<HTMLElement | null>(null);
 
   const [session, setSession] = useState<ReviewSession>(restored);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
@@ -185,6 +186,9 @@ function App() {
   function handleBuildPack() {
     setRevisionPack(buildRevisionPack(session));
     setSendState("idle");
+    window.setTimeout(() => {
+      revisionSectionRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+    }, 0);
   }
 
   function handleImportDocument() {
@@ -238,7 +242,7 @@ function App() {
     }
   }
 
-  async function handleConfirmedSend() {
+  async function handleRevisionDelivery() {
     if (!revisionPack || isSending) return;
     setSendState("idle");
     setIsSending(true);
@@ -251,6 +255,14 @@ function App() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  function handleRevisionAction() {
+    if (revisionDeliveryMode === "send") {
+      setConfirmingSend(true);
+      return;
+    }
+    void handleRevisionDelivery();
   }
 
   function handleExportSession() {
@@ -365,7 +377,7 @@ function App() {
             </div>
           </section>
 
-          <section className="panel-section revision-section">
+          <section className="panel-section revision-section" ref={revisionSectionRef}>
             <div className="section-heading">
               <span>Revision pack</span>
               <span className="metric">{confirmedCount} confirmed</span>
@@ -386,11 +398,11 @@ function App() {
                   <button
                     className="send-button"
                     type="button"
-                    disabled={!canSend}
-                    onClick={() => setConfirmingSend(true)}
+                    disabled={!canSend || isSending}
+                    onClick={handleRevisionAction}
                   >
                     <Send size={16} />
-                    {revisionActionLabel}
+                    {isSending && revisionDeliveryMode === "copy" ? "Copying..." : revisionActionLabel}
                   </button>
                 </div>
               </>
@@ -485,24 +497,17 @@ function App() {
               </button>
             </div>
             <p>
-              {revisionDeliveryMode === "send"
-                ? "This sends the previewed revision request to ChatGPT. It includes confirmed annotations only and does not resend the full document by default."
-                : "This copies the previewed revision request. You can paste it into ChatGPT, Claude, Codex, or Claude Code yourself. It includes confirmed annotations only and does not resend the full document by default."}
+              This sends the previewed revision request to ChatGPT. It includes confirmed annotations only
+              and does not resend the full document by default.
             </p>
             <textarea className="modal-preview" readOnly value={revisionPack.prompt} />
             <div className="modal-actions">
               <button className="secondary-button" type="button" onClick={() => setConfirmingSend(false)}>
                 Cancel
               </button>
-              <button className="send-button" type="button" disabled={isSending} onClick={handleConfirmedSend}>
+              <button className="send-button" type="button" disabled={isSending} onClick={handleRevisionDelivery}>
                 <Send size={16} />
-                {isSending
-                  ? revisionDeliveryMode === "send"
-                    ? "Sending..."
-                    : "Copying..."
-                  : revisionDeliveryMode === "send"
-                    ? "Confirm and send"
-                    : "Confirm and copy"}
+                {isSending ? "Sending..." : "Confirm and send"}
               </button>
             </div>
           </section>

@@ -117,6 +117,9 @@ mustContain(uiSource, "InlineAnnotationComposer", "widget must expose inline per
 mustContain(uiSource, "Add comment", "primary annotation flow must only require a comment");
 mustContain(uiSource, "Dictate", "primary annotation flow must expose voice dictation when available");
 mustContain(uiSource, "status: \"confirmed\"", "quick annotations must default to confirmed for revision packs");
+mustContain(uiSource, "scrollIntoView", "Build pack must bring the revision pack into view.");
+mustContain(uiSource, "handleRevisionAction", "copy/send revision action routing must be explicit.");
+mustContain(uiSource, "revisionDeliveryMode === \"send\"", "send mode must keep a confirmation path.");
 mustContain(uiSource, "revisionPack.prompt", "widget must preview the exact revision prompt before sending");
 mustContain(uiSource, "confirmed annotations only", "widget must disclose confirmed-only send behavior");
 mustContain(bridgeSource, "sendFollowUpMessage", "bridge must support ChatGPT follow-up send");

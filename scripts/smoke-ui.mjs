@@ -104,6 +104,50 @@ try {
   assert(sentFollowUp?.scrollToBottom === true, "sendFollowUpMessage did not request scrollToBottom");
   assert(errorMessages.length === 0, `browser console errors:\n${errorMessages.join("\n")}`);
 
+  const standalonePage = await browser.newPage({ viewport: { width: 390, height: 860 } });
+  const standaloneConsoleMessages = [];
+  standalonePage.on("console", (message) => {
+    const text = `${message.type()}: ${message.text()}`;
+    if (!text.includes("[vite]") && !text.includes("React DevTools")) {
+      standaloneConsoleMessages.push(text);
+    }
+  });
+  await standalonePage.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        async writeText(text) {
+          window.__copiedRevisionRequest = text;
+        }
+      }
+    });
+  });
+  await standalonePage.goto(URL, { waitUntil: "networkidle" });
+  await standalonePage.getByText("AI Annotated Review Demo Report").first().waitFor();
+  await addAnnotation(standalonePage, 2, {
+    body: "Make this paragraph concrete with one before-and-after example."
+  });
+  await standalonePage.getByRole("button", { name: /Build pack/ }).click();
+  const copyButton = standalonePage.getByRole("button", { name: /Copy revision request/ });
+  await copyButton.waitFor();
+  await standalonePage.waitForTimeout(250);
+  const copyButtonBox = await copyButton.boundingBox();
+  assert(copyButtonBox && copyButtonBox.y >= 0 && copyButtonBox.y < 860, "Build pack did not scroll the copy action into view.");
+  const standalonePackText = await standalonePage.locator(".pack-preview").inputValue();
+  await copyButton.click();
+  assert(
+    (await standalonePage.getByRole("dialog", { name: /Confirm send/ }).count()) === 0,
+    "Copy revision request must not open a confirmation dialog in copy mode."
+  );
+  const copiedText = await standalonePage.evaluate(() => window.__copiedRevisionRequest ?? null);
+  assert(copiedText === standalonePackText, "Copy revision request did not copy the pack directly.");
+  await standalonePage.getByText("Revision request copied to clipboard.").waitFor();
+  const standaloneErrorMessages = standaloneConsoleMessages.filter((line) => line.startsWith("error:"));
+  assert(
+    standaloneErrorMessages.length === 0,
+    `standalone browser console errors:\n${standaloneErrorMessages.join("\n")}`
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -112,9 +156,11 @@ try {
         packIncludesConfirmedOnly: true,
         exportPackAvailable: true,
         confirmationRequired: true,
+        buildPackScrollsToRevisionPack: true,
+        copyModeSkipsSecondConfirmation: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
-        consoleErrors: errorMessages.length
+        consoleErrors: errorMessages.length + standaloneErrorMessages.length
       },
       null,
       2

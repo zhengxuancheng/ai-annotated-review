@@ -21,9 +21,9 @@ Target: desktop recording of the public web app or Chrome side panel beside Chat
 7. Add one high-priority comment and mark it `confirmed`.
 8. Add a second confirmed comment on another block.
 9. Add one rejected comment to show it will not affect the revision pack.
-10. Click `Build pack`.
+10. Click `Build pack`; the app jumps to the revision pack.
 11. Show the preview: confirmed comments are included; rejected/open comments are excluded.
-12. Click `Copy revision request` or `Export pack`.
+12. Click `Copy revision request` to copy immediately, or click `Export pack`.
 13. Paste the revision request back into ChatGPT or Claude.
 14. Show the assistant revising according to the confirmed comments.
 
