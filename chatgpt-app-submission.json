@@ -1,0 +1,100 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "AI Annotated Review",
+    "subtitle": "Annotate AI drafts",
+    "description": "AI Annotated Review helps users open long AI-generated Markdown or plain text outputs inside a ChatGPT app widget, attach comments to specific document blocks, confirm the comments that should guide revision, and send a user-approved revision request back to ChatGPT.",
+    "category": "PRODUCTIVITY"
+  },
+  "tools": {
+    "review_markdown_document": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Parses an explicitly supplied document and returns a review widget session without changing external systems.",
+        "open_world_justification": "Does not publish, post, message, or write to public internet state or third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, charge users, or perform irreversible actions."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Open a long report for paragraph-level annotation.",
+      "user_prompt": "Open the report above in AI Annotated Review so I can leave paragraph-level comments before revising it.",
+      "file_attachment_urls": null,
+      "tools_triggered": "review_markdown_document",
+      "expected_output": "The app opens an embedded review widget with the supplied report split into stable review blocks.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Open Markdown with a user-specified title.",
+      "user_prompt": "Use AI Annotated Review to review this Markdown proposal. Title it \"Launch Plan Review\".",
+      "file_attachment_urls": null,
+      "tools_triggered": "review_markdown_document",
+      "expected_output": "The tool receives the provided Markdown and title, returns summary counts, and renders the widget.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Prepare a memo for annotation instead of immediate revision.",
+      "user_prompt": "Please prepare this long AI-generated research memo for block-level annotation instead of revising it immediately.",
+      "file_attachment_urls": null,
+      "tools_triggered": "review_markdown_document",
+      "expected_output": "The app opens review mode and no revision is sent until the user confirms a revision request in the widget.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Handle a document that may exceed app limits.",
+      "user_prompt": "This document may be too long. Try opening it in AI Annotated Review and tell me if it exceeds the app limits.",
+      "file_attachment_urls": null,
+      "tools_triggered": "review_markdown_document",
+      "expected_output": "The tool either opens a session within documented limits or returns a clear cap error without partial silent import.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Open plain text rather than Markdown.",
+      "user_prompt": "Open this plain text handoff note in the annotation review app. It is not Markdown.",
+      "file_attachment_urls": null,
+      "tools_triggered": "review_markdown_document",
+      "expected_output": "Plain text is converted into reviewable blocks and rendered without requiring Markdown-only formatting.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not trigger when the user asks for direct revision only.",
+      "user_prompt": "Rewrite this report directly. Do not open an annotation UI.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because the user explicitly requested direct revision without annotation review.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for Google Docs creation.",
+      "user_prompt": "Create a Google Doc with comments from this text.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not create Google Docs or external files.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not request or process raw chat history.",
+      "user_prompt": "Read my entire chat history and find every message I should revise.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not request raw conversation history.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for external publication workflows.",
+      "user_prompt": "Publish these annotations to GitHub issues.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not publish to external systems.",
+      "expected_output_url": null
+    }
+  ]
+}

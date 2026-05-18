@@ -1,0 +1,20 @@
+{
+  "name": "@ai-annotated-review/chatgpt-app-cloudflare-worker",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "npm run typecheck && npx --yes wrangler@4.92.0 deploy --dry-run --outdir dist",
+    "dev": "npx --yes wrangler@4.92.0 dev --local",
+    "deploy": "npx --yes wrangler@4.92.0 deploy",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ai-annotated-review/chatgpt-app-server": "0.1.0",
+    "agents": "^0.12.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260518.1"
+  }
+}

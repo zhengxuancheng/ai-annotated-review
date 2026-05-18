@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">AI Annotated Review icon</title>
+  <desc id="desc">A document with anchored review comments.</desc>
+  <rect width="512" height="512" rx="96" fill="#16324f"/>
+  <rect x="112" y="78" width="244" height="356" rx="28" fill="#f8fafc"/>
+  <path d="M160 154h142M160 206h150M160 258h112M160 310h138" stroke="#16324f" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="382" cy="168" r="42" fill="#e3b341"/>
+  <path d="M382 210v56c0 18-14 32-32 32h-30" stroke="#e3b341" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="326" cy="298" r="18" fill="#e3b341"/>
+  <path d="M148 376h112" stroke="#2f855a" stroke-width="24" stroke-linecap="round"/>
+</svg>

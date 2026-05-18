@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checkedAt": "2026-05-18T04:48:30.293Z",
+  "endpoint": "https://ai-annotated-review.liujinxingde2008.workers.dev/mcp",
+  "health": {
+    "ok": true,
+    "mcpPath": "/mcp",
+    "widgetDomainConfigured": true
+  },
+  "endpointProbe": true,
+  "server": {
+    "name": "ai-annotated-review",
+    "version": "0.1.0"
+  },
+  "toolCount": 1,
+  "blockCount": 11,
+  "widgetUri": "ui://ai-annotated-review/review-widget-v2.html",
+  "widgetHtmlChars": 401942,
+  "widgetDomain": "https://ai-annotated-review.liujinxingde2008.workers.dev"
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@ai-annotated-review/chatgpt-app-server",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./app": {
+      "types": "./dist/app.d.ts",
+      "default": "./dist/app.js"
+    },
+    "./privacy": {
+      "types": "./dist/privacyPolicy.d.ts",
+      "default": "./dist/privacyPolicy.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@ai-annotated-review/annotation-model": "0.1.0",
+    "@ai-annotated-review/markdown-block-parser": "0.1.0",
+    "@ai-annotated-review/review-core": "0.1.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  }
+}

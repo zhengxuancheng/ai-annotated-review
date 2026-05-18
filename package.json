@@ -1,0 +1,67 @@
+{
+  "name": "ai-annotated-review",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "Desktop ChatGPT Apps SDK workflow for anchored review of long AI-generated documents.",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "build": "npm run build:packages && npm run build:app",
+    "build:packages": "npm run build -w @ai-annotated-review/annotation-model && npm run build -w @ai-annotated-review/markdown-block-parser && npm run build -w @ai-annotated-review/review-core && npm run build -w @ai-annotated-review/revision-prompt-builder",
+    "build:app": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && npm run build:worker-widget && npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker",
+    "build:worker-widget": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && node scripts/generate-worker-widget.mjs",
+    "dev": "npm run dev -w @ai-annotated-review/chatgpt-app-server",
+    "preview:web": "npm run dev -w @ai-annotated-review/chatgpt-app-web",
+    "start": "npm run start -w @ai-annotated-review/chatgpt-app-server",
+    "smoke:mcp": "node scripts/smoke-mcp.mjs",
+    "smoke:remote": "node scripts/smoke-remote-mcp.mjs",
+    "smoke:ui": "node scripts/smoke-ui.mjs",
+    "smoke:container": "node scripts/smoke-container.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -b",
+    "verify": "npm test && npm run typecheck && npm run build && node scripts/verify-functional-claims.mjs && npm run smoke:mcp && npm run smoke:ui && npm run verify:worker && npm run verify:license && npm run verify:reality && npm run verify:deployment-config && npm run verify:submission:local",
+    "verify:deployment-config": "node scripts/verify-deployment-config.mjs",
+    "verify:functionality": "npm run build && node scripts/verify-functional-claims.mjs && npm run smoke:mcp && npm run smoke:ui",
+    "verify:license": "node scripts/verify-license.mjs",
+    "verify:reality": "node scripts/verify-reality.mjs",
+    "verify:worker": "node scripts/verify-worker-adapter.mjs",
+    "verify:submission:local": "node scripts/verify-submission-readiness.mjs --local",
+    "verify:submission:strict": "node scripts/verify-submission-readiness.mjs --strict",
+    "capture:screenshots": "node scripts/capture-submission-screenshots.mjs"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/chatgpt-app/server",
+    "apps/chatgpt-app/web",
+    "apps/chatgpt-app/cloudflare-worker"
+  ],
+  "dependencies": {
+    "@floating-ui/react": "^0.27.19",
+    "@modelcontextprotocol/ext-apps": "^1.7.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "lucide-react": "^1.16.0",
+    "mdast-util-to-string": "^4.0.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^29.1.1",
+    "playwright-core": "^1.60.0",
+    "tsx": "^4.22.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.6"
+  }
+}

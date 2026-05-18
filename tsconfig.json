@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/annotation-model" },
+    { "path": "packages/markdown-block-parser" },
+    { "path": "packages/review-core" },
+    { "path": "packages/revision-prompt-builder" },
+    { "path": "apps/chatgpt-app/server" },
+    { "path": "apps/chatgpt-app/web" },
+    { "path": "apps/chatgpt-app/cloudflare-worker" }
+  ]
+}
