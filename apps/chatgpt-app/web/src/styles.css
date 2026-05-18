@@ -504,6 +504,30 @@ button:disabled {
   color: #b64a4a;
 }
 
+.copy-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: inline-flex;
+  max-width: calc(100vw - 36px);
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #182033;
+  color: #fff;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.28);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 740;
+  pointer-events: none;
+}
+
+.copy-toast svg {
+  color: #8fd8b5;
+  flex: none;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

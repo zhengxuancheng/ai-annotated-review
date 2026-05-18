@@ -112,7 +112,13 @@ const uiSource = await readFile("apps/chatgpt-app/web/src/main.tsx", "utf8");
 const bridgeSource = await readFile("apps/chatgpt-app/web/src/openaiBridge.ts", "utf8");
 mustContain(uiSource, "Confirm send", "widget must show explicit send confirmation");
 mustContain(uiSource, "Confirm and send", "widget must require explicit confirm-and-send action");
-mustContain(uiSource, "Copy revision request", "standalone web/extension modes must provide a copy action");
+mustContain(
+  uiSource,
+  'revisionDeliveryMode === "send" ? "Send revision request" : "Copy"',
+  "standalone web/extension modes must provide a short copy action"
+);
+mustContain(uiSource, "copy-toast", "copy mode must expose visible copied feedback");
+mustContain(uiSource, "getCopyToastLabel", "copy feedback must support locale-aware copied text");
 mustContain(uiSource, "InlineAnnotationComposer", "widget must expose inline per-block annotation composition");
 mustContain(uiSource, "Add comment", "primary annotation flow must only require a comment");
 mustContain(uiSource, "Dictate", "primary annotation flow must expose voice dictation when available");

@@ -74,6 +74,7 @@ function App() {
   const restored = restoreSessionFromWidgetState(initialSession, initialWidgetState);
   const activeHostSessionId = useRef(restored.id);
   const revisionSectionRef = useRef<HTMLElement | null>(null);
+  const copyToastTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
   const [session, setSession] = useState<ReviewSession>(restored);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
@@ -87,6 +88,7 @@ function App() {
   const [revisionPack, setRevisionPack] = useState<RevisionPack | null>(null);
   const [confirmingSend, setConfirmingSend] = useState(false);
   const [sendState, setSendState] = useState<SendState>("idle");
+  const [copyToastVisible, setCopyToastVisible] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importDraft, setImportDraft] = useState<ImportDraft>(EMPTY_IMPORT_DRAFT);
@@ -134,8 +136,16 @@ function App() {
   const confirmedCount = summary.countsByStatus.confirmed;
   const canSend = Boolean(revisionPack && revisionPack.itemCount > 0);
   const revisionDeliveryMode = getRevisionDeliveryMode();
-  const revisionActionLabel =
-    revisionDeliveryMode === "send" ? "Send revision request" : "Copy revision request";
+  const revisionActionLabel = revisionDeliveryMode === "send" ? "Send revision request" : "Copy";
+  const copyToastLabel = getCopyToastLabel();
+
+  useEffect(() => {
+    return () => {
+      if (copyToastTimerRef.current !== null) {
+        window.clearTimeout(copyToastTimerRef.current);
+      }
+    };
+  }, []);
 
   function handleOpenComposer(blockId: string) {
     setSelectedBlockId(blockId);
@@ -249,6 +259,9 @@ function App() {
     try {
       const result = await sendRevisionFollowUp(revisionPack.prompt);
       setSendState(result);
+      if (result === "copied") {
+        showCopyToast();
+      }
       setConfirmingSend(false);
     } catch {
       setSendState("error");
@@ -412,9 +425,6 @@ function App() {
             {sendState === "sent" ? (
               <p className="status-note success">Revision request sent.</p>
             ) : null}
-            {sendState === "copied" ? (
-              <p className="status-note success">Revision request copied to clipboard.</p>
-            ) : null}
             {sendState === "fallback" ? (
               <p className="status-note">Copy was unavailable. Export the pack instead.</p>
             ) : null}
@@ -513,8 +523,26 @@ function App() {
           </section>
         </div>
       ) : null}
+
+      {copyToastVisible ? (
+        <div className="copy-toast" role="status" aria-live="polite">
+          <CheckCircle2 aria-hidden="true" size={16} />
+          <span>{copyToastLabel}</span>
+        </div>
+      ) : null}
     </main>
   );
+
+  function showCopyToast() {
+    if (copyToastTimerRef.current !== null) {
+      window.clearTimeout(copyToastTimerRef.current);
+    }
+    setCopyToastVisible(true);
+    copyToastTimerRef.current = window.setTimeout(() => {
+      setCopyToastVisible(false);
+      copyToastTimerRef.current = null;
+    }, 3_000);
+  }
 }
 
 function DocumentPane({
@@ -773,6 +801,13 @@ function appendTranscript(current: string, transcript: string): string {
   const trimmedCurrent = current.trimEnd();
   if (!trimmedCurrent) return transcript;
   return `${trimmedCurrent} ${transcript}`;
+}
+
+function getCopyToastLabel(): string {
+  if (typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("zh")) {
+    return "已复制";
+  }
+  return "Copied";
 }
 
 function inferAnnotationTitle(body: string): string {

@@ -64,8 +64,9 @@ Results:
 - Inline composer update verification passed on 2026-05-18: `npm run verify` passed under Codex's bundled Node v24.14.0; `smoke:ui` added three annotations through the inline per-block comment flow and confirmed the revision pack still includes confirmed annotations only.
 - Browser visual QA confirmed that clicking a block comment button opens a composer directly inside that block. The composer exposes `Comment`, `Dictate`, `Cancel`, and `Add comment`; it does not ask the reviewer to fill title, priority, or status.
 - Production Worker redeploy succeeded after the inline composer update with version ID `5424b958-8c92-40f4-a4fd-b073780dc436`. Remote smoke passed and `/app` contains the updated `inline-composer`, `Dictate`, and `Add comment` UI.
-- Copy-flow update verification passed on 2026-05-18: `smoke:ui` now checks a narrow standalone viewport where `Build pack` scrolls the `Copy revision request` action into view, and copy mode copies directly without opening the `Confirm send` modal. Send mode inside the Apps SDK bridge still requires `Confirm send`.
+- Copy-flow update verification passed on 2026-05-18: `smoke:ui` now checks a narrow standalone viewport where `Build pack` scrolls the `Copy` action into view, copy mode copies directly without opening the `Confirm send` modal, and the copied notice appears then auto-dismisses. Send mode inside the Apps SDK bridge still requires `Confirm send`.
 - Production Worker redeploy succeeded after the copy-flow update with version ID `e818f90e-249d-44f2-a4e9-ef3746a5774a`. Remote smoke passed; `/app` contains the scroll-to-pack behavior and no longer contains `Confirm and copy`.
+- Copy toast update deployed on 2026-05-18 with Worker version ID `f6eb819c-9fa0-4d97-a1f9-52cc8bdad0be`. Remote smoke passed; `/app` contains `copy-toast`, `Copied`, and `已复制`, and no longer contains the long `Copy revision request` button label.
 
 ## Skill-Driven Audit Refresh
 

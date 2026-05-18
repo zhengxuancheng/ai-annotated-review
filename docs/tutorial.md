@@ -52,7 +52,7 @@ Review workflow:
 8. Keep revision-driving comments confirmed, or change status later in the annotations panel.
 9. Click `Build pack`; the app scrolls to the generated revision pack.
 10. Review the generated prompt.
-11. Click `Copy revision request` to copy immediately, or click `Export pack`.
+11. Click `Copy` to copy immediately; a short copied notice appears and then disappears. You can also click `Export pack`.
 12. Paste the revision request into ChatGPT, Claude, Codex, or Claude Code yourself.
 
 The public web app does not silently send anything back to an AI service.

@@ -20,7 +20,7 @@ Current boundary:
 - No scraping or hidden full-chat import.
 - No accounts, billing, telemetry, external LLM API calls, or cloud sync.
 - Revision requests are sent, copied, or exported only after explicit user action.
-- In public web and browser-extension modes, `Copy revision request` copies immediately; the extra confirmation modal is reserved for actual send-back-to-ChatGPT host actions.
+- In public web and browser-extension modes, `Copy` copies immediately and shows a short auto-dismissing copied notice; the extra confirmation modal is reserved for actual send-back-to-ChatGPT host actions.
 - Licensed under Apache-2.0.
 
 ## Local Commands

@@ -128,7 +128,7 @@ try {
     body: "Make this paragraph concrete with one before-and-after example."
   });
   await standalonePage.getByRole("button", { name: /Build pack/ }).click();
-  const copyButton = standalonePage.getByRole("button", { name: /Copy revision request/ });
+  const copyButton = standalonePage.getByRole("button", { name: /^Copy$/ });
   await copyButton.waitFor();
   await standalonePage.waitForTimeout(250);
   const copyButtonBox = await copyButton.boundingBox();
@@ -137,11 +137,13 @@ try {
   await copyButton.click();
   assert(
     (await standalonePage.getByRole("dialog", { name: /Confirm send/ }).count()) === 0,
-    "Copy revision request must not open a confirmation dialog in copy mode."
+    "Copy must not open a confirmation dialog in copy mode."
   );
   const copiedText = await standalonePage.evaluate(() => window.__copiedRevisionRequest ?? null);
-  assert(copiedText === standalonePackText, "Copy revision request did not copy the pack directly.");
-  await standalonePage.getByText("Revision request copied to clipboard.").waitFor();
+  assert(copiedText === standalonePackText, "Copy did not copy the pack directly.");
+  const copiedToast = standalonePage.getByRole("status").filter({ hasText: /^(Copied|已复制)$/ });
+  await copiedToast.waitFor();
+  await copiedToast.waitFor({ state: "hidden", timeout: 5_000 });
   const standaloneErrorMessages = standaloneConsoleMessages.filter((line) => line.startsWith("error:"));
   assert(
     standaloneErrorMessages.length === 0,
@@ -157,6 +159,8 @@ try {
         exportPackAvailable: true,
         confirmationRequired: true,
         buildPackScrollsToRevisionPack: true,
+        copyButtonLabelIsShort: true,
+        copyToastAutoDismisses: true,
         copyModeSkipsSecondConfirmation: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
