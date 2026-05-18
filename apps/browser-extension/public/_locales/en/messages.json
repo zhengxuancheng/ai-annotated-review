@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "AI Annotated Review Companion",
+    "description": "Extension name shown in Chrome and Chrome Web Store."
+  },
+  "extensionDescription": {
+    "message": "Review long AI outputs from ChatGPT and Claude in a browser side panel.",
+    "description": "Short extension description shown in Chrome and Chrome Web Store."
+  },
+  "extensionActionTitle": {
+    "message": "Open AI Annotated Review",
+    "description": "Tooltip for the extension action button."
+  }
+}

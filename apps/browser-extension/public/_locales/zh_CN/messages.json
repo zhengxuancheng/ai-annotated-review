@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "AI 批注式审阅助手",
+    "description": "Extension name shown in Chrome and Chrome Web Store."
+  },
+  "extensionDescription": {
+    "message": "在浏览器侧栏中审阅来自 ChatGPT 和 Claude 的长篇 AI 输出。",
+    "description": "Short extension description shown in Chrome and Chrome Web Store."
+  },
+  "extensionActionTitle": {
+    "message": "打开 AI 批注式审阅",
+    "description": "Tooltip for the extension action button."
+  }
+}
