@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 16:06 CST
+Latest audit refresh: 2026-05-18 17:32 CST
 
 ## Commands Run
 
@@ -68,6 +68,7 @@ Results:
 - Production Worker redeploy succeeded after the copy-flow update with version ID `e818f90e-249d-44f2-a4e9-ef3746a5774a`. Remote smoke passed; `/app` contains the scroll-to-pack behavior and no longer contains `Confirm and copy`.
 - Copy toast update deployed on 2026-05-18 with Worker version ID `f6eb819c-9fa0-4d97-a1f9-52cc8bdad0be`. Remote smoke passed; `/app` contains `copy-toast`, `Copied`, and `已复制`, and no longer contains the long `Copy revision request` button label.
 - Extension voice-input permission update verification passed on 2026-05-18: `smoke:ui` now simulates a Chrome extension side panel with microphone permission still at `prompt`, clicks `Dictate`, verifies that `voice-permission.html` opens, and verifies speech recognition does not start before extension microphone permission is granted. `verify:adapters` verifies the built extension contains `dist/voice-permission.html`. Production Worker redeploy succeeded with version ID `9e0e07cc-d94e-4b0c-a3b2-2e7381f1c654`; remote smoke passed and `/app` contains the updated microphone permission message.
+- Continuous dictation update verification passed on 2026-05-18: the first `npm run smoke:ui` red test failed on `Dictation must request continuous recognition`, then the implementation was updated and `smoke:ui` passed with `voiceDictationIsContinuous`, `voiceDictationKeepsMultipleSegments`, `voiceDictationRestartsAfterPause`, and `voiceDictationStopsOnlyByUser`. Full `npm run verify` passed under Codex's bundled Node v24.14.0. Production Worker redeploy succeeded with version ID `039be1a2-7875-4bfe-ac9f-006163d8ad67`; remote smoke passed, and `/app` contains the updated listening/stop strings.
 
 ## Skill-Driven Audit Refresh
 

@@ -656,10 +656,21 @@ function InlineAnnotationComposer({
   onCancel: () => void;
   onSubmit: () => void;
 }) {
+  const draftRef = useRef(value);
+  useEffect(() => {
+    draftRef.current = value;
+  }, [value]);
   const dictation = useSpeechDictation((transcript) => {
-    onChange(appendTranscript(value, transcript));
+    const nextValue = appendTranscript(draftRef.current, transcript);
+    draftRef.current = nextValue;
+    onChange(nextValue);
   });
   const canSubmit = value.trim().length > 0;
+
+  function handleDraftChange(nextValue: string) {
+    draftRef.current = nextValue;
+    onChange(nextValue);
+  }
 
   return (
     <div
@@ -674,7 +685,7 @@ function InlineAnnotationComposer({
           autoFocus
           value={value}
           rows={4}
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => handleDraftChange(event.target.value)}
         />
       </label>
       <div className="inline-composer-actions">
@@ -730,12 +741,22 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
   toggle: () => void;
 } {
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null);
+  const shouldKeepListeningRef = useRef(false);
+  const stoppingByUserRef = useRef(false);
+  const latestInterimTranscriptRef = useRef("");
+  const onTranscriptRef = useRef(onTranscript);
   const [listening, setListening] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const supported = typeof window !== "undefined" && getSpeechRecognitionConstructor() !== null;
 
   useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+  }, [onTranscript]);
+
+  useEffect(() => {
     return () => {
+      shouldKeepListeningRef.current = false;
+      stoppingByUserRef.current = true;
       recognitionRef.current?.abort();
     };
   }, []);
@@ -743,8 +764,16 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
   async function toggle() {
     const recognition = recognitionRef.current;
     if (listening && recognition) {
-      recognition.stop();
+      shouldKeepListeningRef.current = false;
+      stoppingByUserRef.current = true;
+      commitLatestInterimTranscript();
+      try {
+        recognition.stop();
+      } catch {
+        recognition.abort();
+      }
       setListening(false);
+      setMessage(null);
       return;
     }
 
@@ -764,39 +793,81 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
 
     const next = new Recognition();
     recognitionRef.current = next;
+    shouldKeepListeningRef.current = true;
+    stoppingByUserRef.current = false;
+    latestInterimTranscriptRef.current = "";
     next.lang = navigator.language || "zh-CN";
-    next.continuous = false;
+    next.continuous = true;
     next.interimResults = true;
     next.maxAlternatives = 1;
     next.onresult = (event) => {
       let finalTranscript = "";
+      let interimTranscript = "";
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
         if (result?.isFinal) {
           finalTranscript += result[0]?.transcript ?? "";
+        } else {
+          interimTranscript += result?.[0]?.transcript ?? "";
         }
       }
       if (finalTranscript.trim()) {
-        onTranscript(finalTranscript.trim());
+        latestInterimTranscriptRef.current = "";
+        onTranscriptRef.current(finalTranscript.trim());
+        return;
       }
+      latestInterimTranscriptRef.current = interimTranscript.trim();
     };
     next.onerror = (event) => {
-      setListening(false);
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        shouldKeepListeningRef.current = false;
+        stoppingByUserRef.current = true;
+        setListening(false);
         void handleSpeechPermissionBlocked();
         return;
       }
+      if (event.error === "no-speech") {
+        setMessage("Listening. Click Stop when finished.");
+        return;
+      }
+      shouldKeepListeningRef.current = false;
+      stoppingByUserRef.current = true;
+      setListening(false);
       setMessage("Voice input stopped.");
     };
     next.onend = () => {
+      if (recognitionRef.current !== next) {
+        return;
+      }
+      if (shouldKeepListeningRef.current && !stoppingByUserRef.current) {
+        commitLatestInterimTranscript();
+        window.setTimeout(() => {
+          if (!shouldKeepListeningRef.current || stoppingByUserRef.current) {
+            return;
+          }
+          try {
+            next.start();
+            setListening(true);
+            setMessage("Listening. Click Stop when finished.");
+          } catch {
+            shouldKeepListeningRef.current = false;
+            setListening(false);
+            setMessage("Voice input could not restart.");
+          }
+        }, 0);
+        return;
+      }
+      commitLatestInterimTranscript();
+      recognitionRef.current = null;
       setListening(false);
     };
 
     try {
       next.start();
-      setMessage(null);
+      setMessage("Listening. Click Stop when finished.");
       setListening(true);
     } catch {
+      shouldKeepListeningRef.current = false;
       setListening(false);
       setMessage("Voice input could not start.");
     }
@@ -813,6 +884,13 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
       return;
     }
     setMessage("Microphone permission was blocked.");
+  }
+
+  function commitLatestInterimTranscript() {
+    const transcript = latestInterimTranscriptRef.current.trim();
+    if (!transcript) return;
+    latestInterimTranscriptRef.current = "";
+    onTranscriptRef.current(transcript);
   }
 }
 

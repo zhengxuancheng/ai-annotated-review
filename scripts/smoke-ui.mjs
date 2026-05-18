@@ -226,6 +226,103 @@ try {
   );
   await extensionComposer.getByText(/microphone permission/i).waitFor();
 
+  const dictationPage = await browser.newPage({ viewport: { width: 390, height: 860 } });
+  await dictationPage.addInitScript(() => {
+    Object.defineProperty(navigator, "permissions", {
+      configurable: true,
+      value: {
+        async query(input) {
+          if (input.name === "microphone") return { state: "granted" };
+          return { state: "granted" };
+        }
+      }
+    });
+    window.__speechRecognitionInstances = [];
+    window.__speechRecognitionStartCount = 0;
+    window.__speechRecognitionStopCount = 0;
+    class FakeSpeechRecognition {
+      continuous = false;
+      interimResults = false;
+      maxAlternatives = 1;
+      lang = "en-US";
+      onend = null;
+      onerror = null;
+      onresult = null;
+      abort() {}
+      stop() {
+        window.__speechRecognitionStopCount += 1;
+        this.onend?.();
+      }
+      start() {
+        window.__speechRecognitionStartCount += 1;
+      }
+    }
+    Object.defineProperty(window, "webkitSpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition
+    });
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition
+    });
+    const OriginalFakeSpeechRecognition = FakeSpeechRecognition;
+    const TrackedSpeechRecognition = class TrackedSpeechRecognition extends OriginalFakeSpeechRecognition {
+      constructor() {
+        super();
+        window.__speechRecognitionInstances.push(this);
+      }
+    };
+    window.webkitSpeechRecognition = TrackedSpeechRecognition;
+    window.SpeechRecognition = TrackedSpeechRecognition;
+  });
+  await dictationPage.goto(URL, { waitUntil: "networkidle" });
+  await dictationPage.getByText("AI Annotated Review Demo Report").first().waitFor();
+  const dictationBlock = dictationPage.locator(".review-block").nth(2);
+  await dictationBlock.locator(".add-block-button").click();
+  const dictationComposer = dictationBlock.locator(".inline-composer");
+  await dictationComposer.waitFor();
+  await dictationComposer.getByRole("button", { name: /Dictate/ }).click();
+  await dictationComposer.getByRole("button", { name: /Stop/ }).waitFor();
+  const recognitionConfig = await dictationPage.evaluate(() => {
+    const instance = window.__speechRecognitionInstances[0];
+    return {
+      continuous: instance?.continuous,
+      interimResults: instance?.interimResults,
+      startCount: window.__speechRecognitionStartCount
+    };
+  });
+  assert(recognitionConfig.continuous === true, "Dictation must request continuous recognition.");
+  assert(recognitionConfig.interimResults === true, "Dictation must request interim recognition results.");
+  assert(recognitionConfig.startCount === 1, `expected one recognition start, got ${recognitionConfig.startCount}`);
+  await dictationPage.evaluate(() => {
+    const instance = window.__speechRecognitionInstances[0];
+    const resultFor = (text) => ({ isFinal: true, 0: { transcript: text } });
+    instance.onresult?.({ resultIndex: 0, results: [resultFor("第一段")] });
+    instance.onresult?.({ resultIndex: 0, results: [resultFor("第二段")] });
+  });
+  await dictationPage.waitForFunction(() => {
+    const textarea = document.querySelector(".inline-composer textarea");
+    return textarea?.value.includes("第一段") && textarea.value.includes("第二段");
+  });
+  const dictatedText = await dictationComposer.locator("label").filter({ hasText: "Comment" }).locator("textarea").inputValue();
+  assert(
+    dictatedText.includes("第一段") && dictatedText.includes("第二段"),
+    `Dictation must keep multiple final speech segments, got ${dictatedText}`
+  );
+  await dictationPage.evaluate(() => {
+    window.__speechRecognitionInstances[0].onend?.();
+  });
+  await dictationPage.waitForFunction(() => window.__speechRecognitionStartCount === 2);
+  await dictationComposer.getByRole("button", { name: /Stop/ }).waitFor();
+  await dictationComposer.getByRole("button", { name: /Stop/ }).click();
+  await dictationComposer.getByRole("button", { name: /Dictate/ }).waitFor();
+  const stopState = await dictationPage.evaluate(() => ({
+    startCount: window.__speechRecognitionStartCount,
+    stopCount: window.__speechRecognitionStopCount
+  }));
+  assert(stopState.startCount === 2, `Dictation restarted after user stop; start count ${stopState.startCount}`);
+  assert(stopState.stopCount === 1, `expected one user stop, got ${stopState.stopCount}`);
+
   console.log(
     JSON.stringify(
       {
@@ -239,6 +336,10 @@ try {
         copyToastAutoDismisses: true,
         copyModeSkipsSecondConfirmation: true,
         extensionVoicePermissionPageOpens: true,
+        voiceDictationIsContinuous: true,
+        voiceDictationKeepsMultipleSegments: true,
+        voiceDictationRestartsAfterPause: true,
+        voiceDictationStopsOnlyByUser: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
         consoleErrors: errorMessages.length + standaloneErrorMessages.length
