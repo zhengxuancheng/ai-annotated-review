@@ -5,6 +5,14 @@
   "license": "Apache-2.0",
   "type": "module",
   "description": "Desktop ChatGPT Apps SDK workflow for anchored review of long AI-generated documents.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhengxuancheng/ai-annotated-review.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zhengxuancheng/ai-annotated-review/issues"
+  },
+  "homepage": "https://github.com/zhengxuancheng/ai-annotated-review#readme",
   "engines": {
     "node": ">=22",
     "npm": ">=10"

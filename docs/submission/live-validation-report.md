@@ -10,7 +10,7 @@ Scope: ChatGPT web Developer Mode validation through the stable Cloudflare Worke
 - Commit: no git commit yet; initial repository is still uncommitted
 - Public MCP endpoint: `https://ai-annotated-review.liujinxingde2008.workers.dev/mcp`
 - Public base URL: `https://ai-annotated-review.liujinxingde2008.workers.dev`
-- Remote smoke report: `docs/submission/remote-smoke-report.json`, `ok: true`, checked at `2026-05-18T04:48:30.293Z`
+- Remote smoke report: `docs/submission/remote-smoke-report.json`, `ok: true`, checked at `2026-05-18T05:11:10.440Z`
 - ChatGPT client: ChatGPT web, Developer Mode, desktop, Chrome, Instant model
 - Desktop browser: Google Chrome on macOS
 - ChatGPT development connector name: `AI Annotated Review Production`

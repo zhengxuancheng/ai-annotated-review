@@ -55,6 +55,9 @@ http://127.0.0.1:5173/
 
 ## Key Docs
 
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support](SUPPORT.md)
 - [Usage tutorial](docs/tutorial.md)
 - [Architecture](docs/architecture.md)
 - [Privacy model](docs/privacy-model.md)
@@ -69,6 +72,7 @@ http://127.0.0.1:5173/
 - [Privacy policy draft](docs/legal/privacy-policy-draft.md)
 - [Resource decisions](docs/research/resource-decision-record.md)
 - [Patentability notes](docs/ip/patentability-notes.md)
+- [Public GitHub checklist](docs/release/public-github-checklist.md)
 
 ## Publication Status
 

@@ -1,0 +1,45 @@
+name: Adapter proposal
+description: Propose a future platform adapter without overclaiming support.
+title: "[Adapter]: "
+labels:
+  - adapter
+  - proposal
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Codex
+        - Claude Code
+        - VS Code
+        - Cursor
+        - Browser extension
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Desired workflow
+      description: What should the adapter let users do?
+    validations:
+      required: true
+  - type: textarea
+    id: platform_capabilities
+    attributes:
+      label: Platform capabilities checked
+      description: Link official docs or source evidence. Do not infer native UI modification support.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Required boundaries
+      options:
+        - label: The adapter does not claim native message-bubble modification unless official platform APIs support it.
+          required: true
+        - label: The adapter keeps the core annotation model platform-agnostic.
+          required: true
+        - label: The adapter has a commercially usable license path.
+          required: true

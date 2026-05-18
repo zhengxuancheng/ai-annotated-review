@@ -62,7 +62,7 @@ Reviewer-facing justification:
 
 - `npm run verify`: passed on 2026-05-18 using Node v24.14.0, which satisfies the repo's Node >=22 requirement.
 - `npm run verify:submission:strict`: passed with production environment variables; warnings and blockers were empty.
-- `npm run smoke:remote`: passed against the production Cloudflare Worker endpoint at `2026-05-18T04:48:30.293Z`.
+- `npm run smoke:remote`: passed against the production Cloudflare Worker endpoint at `2026-05-18T05:11:10.440Z`.
 - `npm audit --audit-level=moderate`: passed with 0 vulnerabilities.
 - ChatGPT web Developer Mode golden loop: passed with connector `AI Annotated Review Production`.
 - Desktop production screenshot: captured and visually checked after Codex restart.

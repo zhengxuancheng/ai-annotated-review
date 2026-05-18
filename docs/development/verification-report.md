@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 12:47 CST
+Latest audit refresh: 2026-05-18 13:10 CST
 
 ## Commands Run
 
@@ -26,6 +26,7 @@ macOS screencapture attempt for production screenshot
 Visual check of production ChatGPT connector screenshot
 PATH="/Users/liujinxing/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" npm_config_prefix="/Users/liujinxing/.npm-codex-node24" npm run verify
 APP_PUBLIC_BASE_URL=https://ai-annotated-review.liujinxingde2008.workers.dev APP_WIDGET_DOMAIN=https://ai-annotated-review.liujinxingde2008.workers.dev APP_PRIVACY_POLICY_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/privacy REMOTE_MCP_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/mcp npm run verify:submission:strict
+Public GitHub release-prep checks
 ```
 
 Results:
@@ -51,6 +52,7 @@ Results:
 - Apache-2.0 `LICENSE` is present by owner decision.
 - `npm run verify`: passed when run under Codex's bundled Node v24.14.0. The shell default Node v20.20.2 is below the repo's declared Node >=22 requirement and fails Wrangler dry-run; this is an environment-version issue, not a source failure.
 - `npm run verify:reality`: passed after updating the old license-pending guard to require Apache-2.0 consistency and to skip generated caches.
+- Public GitHub release-prep checks: `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`, issue templates, PR template, repository metadata, and `docs/release/public-github-checklist.md` were added; `npm run verify`, `npm run verify:reality`, `npm run verify:license`, and strict submission readiness passed after these changes.
 - Package-lock scan found no GPL, LGPL, or AGPL license strings after removing `wrangler` as a committed devDependency.
 
 ## Skill-Driven Audit Refresh
