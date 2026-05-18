@@ -22,8 +22,14 @@ export default {
     const publicOrigin = resolvePublicOrigin(request, env);
 
     if (request.method === "GET" && url.pathname === "/") {
-      return new Response(`AI Annotated Review MCP server. Endpoint: ${MCP_PATH}`, {
+      return new Response(`AI Annotated Review server. Web app: /app. MCP endpoint: ${MCP_PATH}`, {
         headers: textHeaders()
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/app") {
+      return new Response(WIDGET_HTML, {
+        headers: htmlHeaders()
       });
     }
 
@@ -33,6 +39,7 @@ export default {
         name: "ai-annotated-review",
         version: SERVER_VERSION,
         mcpPath: MCP_PATH,
+        publicAppPath: "/app",
         publicBaseUrl: publicOrigin,
         privacyPolicyUrl: env.APP_PRIVACY_POLICY_URL ?? `${publicOrigin}/privacy`,
         widgetDomainConfigured: true,

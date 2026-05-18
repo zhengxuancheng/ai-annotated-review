@@ -88,7 +88,13 @@ const httpServer = createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/") {
     res.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
-    res.end(`AI Annotated Review MCP server. Endpoint: ${MCP_PATH}`);
+    res.end(`AI Annotated Review server. Web app: /app. MCP endpoint: ${MCP_PATH}`);
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/app") {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    res.end(loadWidgetHtml());
     return;
   }
 
@@ -100,6 +106,7 @@ const httpServer = createServer(async (req, res) => {
         name: "ai-annotated-review",
         version: SERVER_VERSION,
         mcpPath: MCP_PATH,
+        publicAppPath: "/app",
         publicBaseUrl: PUBLIC_BASE_URL,
         privacyPolicyUrl: PRIVACY_POLICY_URL,
         widgetDomainConfigured: Boolean(WIDGET_DOMAIN)

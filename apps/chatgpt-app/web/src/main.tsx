@@ -6,9 +6,15 @@ import type {
   ReviewSession,
   RevisionPack
 } from "@ai-annotated-review/annotation-model";
-import { annotationSchema, annotationStatusSchema } from "@ai-annotated-review/annotation-model";
+import {
+  annotationSchema,
+  annotationStatusSchema,
+  makeStableId
+} from "@ai-annotated-review/annotation-model";
+import { parseMarkdownToReviewDocument } from "@ai-annotated-review/markdown-block-parser";
 import {
   addAnnotation,
+  createReviewSession,
   exportReviewSessionJson,
   summarizeSession,
   updateAnnotationPriority,
@@ -20,6 +26,7 @@ import {
 } from "@ai-annotated-review/revision-prompt-builder";
 import {
   CheckCircle2,
+  Clipboard,
   Download,
   ExternalLink,
   FileText,
@@ -27,6 +34,7 @@ import {
   Maximize2,
   MessageSquarePlus,
   Send,
+  Upload,
   X
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -34,6 +42,7 @@ import { createRoot } from "react-dom/client";
 import {
   getInitialReviewSession,
   getInitialWidgetState,
+  getRevisionDeliveryMode,
   initializeMcpBridge,
   persistPrivateWidgetState,
   requestFullscreen,
@@ -41,6 +50,7 @@ import {
   subscribeToReviewSession
 } from "./openaiBridge.js";
 import { createSampleSession } from "./sampleSession.js";
+import { isBrowserExtensionHost, readActiveTabSelection } from "./hostIntegrations.js";
 import "./styles.css";
 
 type Draft = {
@@ -50,13 +60,24 @@ type Draft = {
   status: AnnotationStatus;
 };
 
-type SendState = "idle" | "sent" | "fallback" | "error";
+type SendState = "idle" | "sent" | "copied" | "fallback" | "error";
+type ImportDraft = {
+  title: string;
+  sourceLabel: string;
+  markdown: string;
+};
 
 const EMPTY_DRAFT: Draft = {
   title: "",
   body: "",
   priority: "P2",
   status: "open"
+};
+
+const EMPTY_IMPORT_DRAFT: ImportDraft = {
+  title: "",
+  sourceLabel: "Manual import",
+  markdown: ""
 };
 
 function App() {
@@ -77,6 +98,11 @@ function App() {
   const [confirmingSend, setConfirmingSend] = useState(false);
   const [sendState, setSendState] = useState<SendState>("idle");
   const [isSending, setIsSending] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importDraft, setImportDraft] = useState<ImportDraft>(EMPTY_IMPORT_DRAFT);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importNotice, setImportNotice] = useState<string | null>(null);
+  const browserExtensionHost = isBrowserExtensionHost();
 
   useEffect(() => {
     initializeMcpBridge();
@@ -121,6 +147,9 @@ function App() {
     Boolean(selectedBlock) && draft.title.trim().length > 0 && draft.body.trim().length > 0;
   const confirmedCount = summary.countsByStatus.confirmed;
   const canSend = Boolean(revisionPack && revisionPack.itemCount > 0);
+  const revisionDeliveryMode = getRevisionDeliveryMode();
+  const revisionActionLabel =
+    revisionDeliveryMode === "send" ? "Send revision request" : "Copy revision request";
 
   function handleAddAnnotation() {
     if (!selectedBlock || !canAddAnnotation) return;
@@ -152,6 +181,56 @@ function App() {
   function handleBuildPack() {
     setRevisionPack(buildRevisionPack(session));
     setSendState("idle");
+  }
+
+  function handleImportDocument() {
+    const markdown = importDraft.markdown.trim();
+    const title = importDraft.title.trim();
+    const sourceLabel = importDraft.sourceLabel.trim();
+    const parsed = parseMarkdownToReviewDocument(markdown, {
+      ...(title ? { title } : {}),
+      ...(sourceLabel ? { sourceLabel } : {})
+    });
+    if (!parsed.ok) {
+      setImportError(parsed.errors.join(" "));
+      return;
+    }
+
+    const next = createReviewSession(parsed.document, {
+      sessionId: makeStableId("session", parsed.document.id),
+      now: parsed.document.createdAt
+    });
+    activeHostSessionId.current = next.id;
+    setSession(next);
+    setSelectedBlockId(next.document.blocks[0]?.id ?? null);
+    setDraft(EMPTY_DRAFT);
+    setRevisionPack(null);
+    setSendState("idle");
+    setImportError(null);
+    setImportNotice(null);
+    setImporting(false);
+  }
+
+  async function handleUseSelectedText() {
+    setImportError(null);
+    setImportNotice(null);
+    try {
+      const selection = await readActiveTabSelection();
+      setImporting(true);
+      setImportDraft({
+        title: selection.title,
+        sourceLabel: selection.sourceLabel,
+        markdown: selection.text
+      });
+      if (!selection.text) {
+        setImportError("Select the AI output text in ChatGPT or Claude first, then click this button again.");
+      } else {
+        setImportNotice("Selected text imported from the active browser tab. Review it before creating the session.");
+      }
+    } catch (error) {
+      setImporting(true);
+      setImportError(error instanceof Error ? error.message : String(error));
+    }
   }
 
   async function handleConfirmedSend() {
@@ -200,6 +279,25 @@ function App() {
           </div>
         </div>
         <div className="topbar-actions">
+          {browserExtensionHost ? (
+            <button className="secondary-button" type="button" onClick={handleUseSelectedText}>
+              <Clipboard size={16} />
+              Use selected text
+            </button>
+          ) : null}
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => {
+              setImportDraft(EMPTY_IMPORT_DRAFT);
+              setImportError(null);
+              setImportNotice(null);
+              setImporting(true);
+            }}
+          >
+            <Upload size={16} />
+            New document
+          </button>
           <button className="icon-button" type="button" onClick={() => requestFullscreen()} title="Fullscreen">
             <Maximize2 size={17} />
           </button>
@@ -359,7 +457,7 @@ function App() {
                     onClick={() => setConfirmingSend(true)}
                   >
                     <Send size={16} />
-                    Send revision request
+                    {revisionActionLabel}
                   </button>
                 </div>
               </>
@@ -369,8 +467,11 @@ function App() {
             {sendState === "sent" ? (
               <p className="status-note success">Revision request sent.</p>
             ) : null}
+            {sendState === "copied" ? (
+              <p className="status-note success">Revision request copied to clipboard.</p>
+            ) : null}
             {sendState === "fallback" ? (
-              <p className="status-note">Host bridge unavailable in local preview.</p>
+              <p className="status-note">Copy was unavailable. Export the pack instead.</p>
             ) : null}
             {sendState === "error" ? (
               <p className="status-note error">Send failed. The preview is still available.</p>
@@ -378,6 +479,68 @@ function App() {
           </section>
         </aside>
       </section>
+
+      {importing ? (
+        <div className="modal-backdrop" role="presentation">
+          <section className="confirm-modal import-modal" role="dialog" aria-modal="true" aria-labelledby="import-title">
+            <div className="modal-header">
+              <h2 id="import-title">Import document</h2>
+              <button className="icon-button" type="button" onClick={() => setImporting(false)} title="Close">
+                <X size={17} />
+              </button>
+            </div>
+            <p>
+              Paste Markdown or selected AI output. The review session stays in this browser surface until you export it.
+            </p>
+            <div className="import-grid">
+              <label>
+                Title
+                <input
+                  value={importDraft.title}
+                  onChange={(event) =>
+                    setImportDraft((current) => ({ ...current, title: event.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                Source
+                <input
+                  value={importDraft.sourceLabel}
+                  onChange={(event) =>
+                    setImportDraft((current) => ({ ...current, sourceLabel: event.target.value }))
+                  }
+                />
+              </label>
+              <label className="wide">
+                Document text
+                <textarea
+                  className="import-textarea"
+                  value={importDraft.markdown}
+                  onChange={(event) =>
+                    setImportDraft((current) => ({ ...current, markdown: event.target.value }))
+                  }
+                />
+              </label>
+            </div>
+            {importNotice ? <p className="status-note success">{importNotice}</p> : null}
+            {importError ? <p className="status-note error">{importError}</p> : null}
+            <div className="modal-actions">
+              <button className="secondary-button" type="button" onClick={() => setImporting(false)}>
+                Cancel
+              </button>
+              <button
+                className="primary-button"
+                type="button"
+                disabled={importDraft.markdown.trim().length === 0}
+                onClick={handleImportDocument}
+              >
+                <CheckCircle2 size={16} />
+                Create review session
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {confirmingSend && revisionPack ? (
         <div className="modal-backdrop" role="presentation">
@@ -389,7 +552,9 @@ function App() {
               </button>
             </div>
             <p>
-              This sends the previewed revision request to ChatGPT. It includes confirmed annotations only and does not resend the full document by default.
+              {revisionDeliveryMode === "send"
+                ? "This sends the previewed revision request to ChatGPT. It includes confirmed annotations only and does not resend the full document by default."
+                : "This copies the previewed revision request. You can paste it into ChatGPT, Claude, Codex, or Claude Code yourself. It includes confirmed annotations only and does not resend the full document by default."}
             </p>
             <textarea className="modal-preview" readOnly value={revisionPack.prompt} />
             <div className="modal-actions">
@@ -398,7 +563,13 @@ function App() {
               </button>
               <button className="send-button" type="button" disabled={isSending} onClick={handleConfirmedSend}>
                 <Send size={16} />
-                {isSending ? "Sending…" : "Confirm and send"}
+                {isSending
+                  ? revisionDeliveryMode === "send"
+                    ? "Sending..."
+                    : "Copying..."
+                  : revisionDeliveryMode === "send"
+                    ? "Confirm and send"
+                    : "Confirm and copy"}
               </button>
             </div>
           </section>

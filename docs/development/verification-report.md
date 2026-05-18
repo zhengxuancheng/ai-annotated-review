@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 13:10 CST
+Latest audit refresh: 2026-05-18 15:10 CST
 
 ## Commands Run
 
@@ -17,6 +17,7 @@ npm run verify:submission:strict
 npm run smoke:container
 npm run smoke:remote
 npm run verify:functionality
+npm run verify:adapters
 npm run verify:deployment-config
 npm run verify:worker
 npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker
@@ -27,6 +28,7 @@ Visual check of production ChatGPT connector screenshot
 PATH="/Users/liujinxing/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" npm_config_prefix="/Users/liujinxing/.npm-codex-node24" npm run verify
 APP_PUBLIC_BASE_URL=https://ai-annotated-review.liujinxingde2008.workers.dev APP_WIDGET_DOMAIN=https://ai-annotated-review.liujinxingde2008.workers.dev APP_PRIVACY_POLICY_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/privacy REMOTE_MCP_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/mcp npm run verify:submission:strict
 Public GitHub release-prep checks
+Pivot implementation for public web app, Chrome side panel extension, and CLI adapter
 ```
 
 Results:
@@ -35,13 +37,14 @@ Results:
 - `npm test`: 4 test files passed, 10 tests passed.
 - `npm run typecheck`: passed.
 - `npm run build`: passed, including Cloudflare Worker dry-run bundling.
-- `npm run verify`: passed. It now runs unit tests, typecheck, build, MCP smoke, UI smoke, license scan, reality checks, and local submission-readiness checks.
+- `npm run verify`: passed after the non-directory pivot. It now runs unit tests, typecheck, build, functional claim verification, adapter verification, MCP smoke, UI smoke, worker verification, license scan, reality checks, deployment config checks, and local submission-readiness checks.
 - `npm run verify:functionality`: passed. It proves parse -> stable blocks -> annotate -> export/import -> confirmed-only revision pack -> MCP/tool/UI smoke.
+- `npm run verify:adapters`: passed. It proves the Chrome extension builds to Manifest V3 with exact ChatGPT/Claude host permissions and that the CLI can create, list blocks, annotate, and build a revision pack.
 - `npm run verify:deployment-config`: passed.
 - `npm run verify:worker`: passed.
 - `npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker`: passed; Wrangler dry-run reported total upload size and exited normally.
 - Local Cloudflare Worker smoke passed with `REMOTE_MCP_URL=http://127.0.0.1:8790/mcp REMOTE_MCP_ALLOW_HTTP=1 npm run smoke:remote`.
-- `npm audit --audit-level=moderate`: completed, 0 vulnerabilities.
+- `npm audit --audit-level=moderate`: completed after the pivot, 0 vulnerabilities.
 - `npm run capture:screenshots`: passed and created `docs/submission/screenshots/review-widget-desktop.png`.
 - `npm run verify:submission:local`: passed with release-blocker warnings.
 - `npm run verify:submission:strict` with production environment variables: passed after the Apache-2.0 license update and production screenshot capture; warnings and blockers were both empty.
@@ -54,6 +57,9 @@ Results:
 - `npm run verify:reality`: passed after updating the old license-pending guard to require Apache-2.0 consistency and to skip generated caches.
 - Public GitHub release-prep checks: `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`, issue templates, PR template, repository metadata, and `docs/release/public-github-checklist.md` were added; `npm run verify`, `npm run verify:reality`, `npm run verify:license`, and strict submission readiness passed after these changes.
 - Package-lock scan found no GPL, LGPL, or AGPL license strings after removing `wrangler` as a committed devDependency.
+- Public web app route `/app` is implemented in the Node server and Cloudflare Worker source. Local `smoke:mcp` now fetches `/app` and verifies the React root and app title. The UI falls back to copy/export outside a ChatGPT Apps SDK host.
+- Production Worker redeploy succeeded on 2026-05-18 with version ID `786b67cf-0556-4984-92f3-edba3d2e5e46`.
+- Production `/app` browser smoke passed: the page rendered, imported a test document, added one confirmed annotation, built a revision pack, and completed `Confirm and copy` with no relevant app console errors.
 
 ## Skill-Driven Audit Refresh
 
@@ -87,6 +93,7 @@ Issues fixed during this refresh:
 - A license regression from `wrangler` as a devDependency was caught and fixed by switching to pinned `npx wrangler@4.92.0`.
 - Strict submission readiness now requires a real remote smoke report and a filled `Status: passed` live ChatGPT developer-mode validation report.
 - Functional claim verification now emits evidence for eight product claims, including confirmed-only pack behavior and user-confirmed send behavior.
+- Adapter verification now emits evidence for browser-extension permission boundaries and CLI behavior.
 
 ## MCP Smoke Tests
 
@@ -129,8 +136,25 @@ Verified desktop flow:
 - Revision pack can be exported as Markdown.
 - Modal content matched revision pack preview.
 - The automated `smoke:ui` script now checks the same flow and confirms `Export pack` is available.
-- Confirmed send degraded to local-preview fallback because no ChatGPT host bridge was present.
+- The automated `smoke:ui` script injects a mock Apps SDK bridge and verifies the explicit send path.
 - No browser console errors in the final smoke pass.
+
+## Adapter Smoke Tests
+
+Verified by `npm run verify:adapters`:
+
+- Browser extension build produced `apps/browser-extension/dist/manifest.json`.
+- Manifest version is 3.
+- Side panel default path is `index.html`.
+- Permissions are limited to `activeTab`, `scripting`, and `sidePanel`.
+- Host permissions are limited to `https://chatgpt.com/*`, `https://chat.openai.com/*`, and `https://claude.ai/*`.
+- No `<all_urls>` or `*://` broad host access is requested.
+- Source guard verifies selected-text import via `window.getSelection()?.toString()`.
+- Source guard rejects whole-page text scraping patterns such as `document.body.innerText`.
+- CLI smoke created a review JSON from `examples/fixtures/product-plan.md`.
+- CLI smoke listed real block IDs.
+- CLI smoke added a confirmed annotation to a target block.
+- CLI smoke generated a revision pack containing the confirmed annotation.
 
 ## ChatGPT Developer Mode Evidence
 
@@ -152,7 +176,8 @@ Verified on 2026-05-18 in ChatGPT web Developer Mode using `AI Annotated Review 
 ## Not Yet Verified
 
 - Public app submission review and approval.
-- Mobile ChatGPT behavior; v1 is desktop-first.
+- Chrome extension manually loaded in a human Chrome profile on both ChatGPT web and Claude web after the latest pivot.
+- Mobile behavior; v1 is desktop/web-first.
 - Owner-reviewed final public privacy policy text.
 - Container runtime smoke with Docker daemon running.
 
@@ -160,11 +185,10 @@ These are not claimed as complete.
 
 ## Strict Submission Blockers
 
-`npm run verify:submission:strict` currently reports no blockers when run with the production Cloudflare Worker URL, widget domain, and privacy URL environment variables.
+`npm run verify:submission:strict` previously reported no blockers when run with the production Cloudflare Worker URL, widget domain, and privacy URL environment variables. Official ChatGPT App submission is now paused, so this is Apps SDK technical-preview evidence rather than the active release gate.
 
 Remaining non-source release gates:
 
-- OpenAI Platform identity verification and global data residency project setup.
-- OpenAI Platform identity verification and project data residency.
-- Mobile smoke if required for final OpenAI review, while v1 remains desktop-first.
-- Official OpenAI dashboard submission and approval.
+- Manual Chrome extension load and selected-text side panel test on ChatGPT web.
+- Manual Chrome extension load and selected-text side panel test on Claude web.
+- Official OpenAI dashboard submission and approval remain paused.

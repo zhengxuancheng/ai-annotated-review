@@ -31,7 +31,12 @@ await mustContain(
 );
 
 const productFiles = await collectFiles(
-  ["apps/chatgpt-app/web/src", "apps/chatgpt-app/server/src", "apps/chatgpt-app/cloudflare-worker/src"],
+  [
+    "apps/chatgpt-app/web/src",
+    "apps/chatgpt-app/server/src",
+    "apps/chatgpt-app/cloudflare-worker/src",
+    "apps/browser-extension/src"
+  ],
   /\.(ts|tsx|css|html)$/
 );
 for (const file of productFiles) {
@@ -67,6 +72,37 @@ if (!main.includes("Confirm send") || !main.includes("Confirm and send")) {
 const bridge = await readFile("apps/chatgpt-app/web/src/openaiBridge.ts", "utf8");
 if (!bridge.includes("sendFollowUpMessage") || !bridge.includes("ui/message")) {
   failures.push("Bridge must keep both ChatGPT and MCP Apps follow-up send paths.");
+}
+
+const extensionManifest = JSON.parse(await readFile("apps/browser-extension/public/manifest.json", "utf8"));
+const expectedHostPermissions = [
+  "https://chatgpt.com/*",
+  "https://chat.openai.com/*",
+  "https://claude.ai/*"
+];
+const expectedPermissions = ["activeTab", "scripting", "sidePanel"];
+if (!sameSet(extensionManifest.host_permissions ?? [], expectedHostPermissions)) {
+  failures.push("Browser extension host permissions must stay limited to ChatGPT and Claude web.");
+}
+if (!sameSet(extensionManifest.permissions ?? [], expectedPermissions)) {
+  failures.push("Browser extension permissions must stay limited to activeTab, scripting, and sidePanel.");
+}
+if (
+  (extensionManifest.host_permissions ?? []).some(
+    (permission) => permission === "<all_urls>" || permission.startsWith("*://")
+  )
+) {
+  failures.push("Browser extension must not request broad host permissions.");
+}
+const hostIntegration = await readFile("apps/chatgpt-app/web/src/hostIntegrations.ts", "utf8");
+if (!hostIntegration.includes("window.getSelection()?.toString()")) {
+  failures.push("Browser extension must import active user selection, not scrape chat pages.");
+}
+if (
+  hostIntegration.includes("document.body.innerText") ||
+  hostIntegration.includes("document.documentElement.innerText")
+) {
+  failures.push("Browser extension must not scrape whole page text.");
 }
 
 const server = await readFile("apps/chatgpt-app/server/src/app.ts", "utf8");
@@ -122,4 +158,13 @@ async function walk(dir, results) {
 
 function countOccurrences(text, needle) {
   return text.split(needle).length - 1;
+}
+
+function sameSet(actual, expected) {
+  const actualSorted = [...actual].sort();
+  const expectedSorted = [...expected].sort();
+  return (
+    actualSorted.length === expectedSorted.length &&
+    actualSorted.every((value, index) => value === expectedSorted[index])
+  );
 }

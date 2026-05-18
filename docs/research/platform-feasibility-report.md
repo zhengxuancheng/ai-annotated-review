@@ -4,6 +4,8 @@ Date: 2026-05-18
 Project: AI Annotated Review
 Status: feasibility report only. No product implementation has started.
 
+Status note, 2026-05-18: this report records the original Apps SDK-first analysis. The active release path is now public web app, Chrome side panel extension, and CLI adapter, with the Apps SDK kept as a technical preview. See `docs/strategy/non-directory-release-plan.md`.
+
 ## Executive Verdict
 
 ChatGPT Apps SDK is the right first target.

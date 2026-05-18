@@ -48,6 +48,7 @@ const workerSource = await readFile(path.join(workerRoot, "src", "index.ts"), "u
 assert(workerSource.includes("createMcpHandler"), "worker must use Cloudflare createMcpHandler");
 assert(workerSource.includes("createAiAnnotatedReviewServer"), "worker must reuse the shared MCP app server");
 assert(workerSource.includes("resolvePublicOrigin"), "worker must derive a stable origin from the request or env");
+assert(workerSource.includes("/app"), "worker must expose the public web app at /app");
 assert(workerSource.includes("/health"), "worker must expose /health");
 assert(workerSource.includes("/privacy"), "worker must expose /privacy");
 

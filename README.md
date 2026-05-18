@@ -1,17 +1,25 @@
 # AI Annotated Review
 
-Publication-track ChatGPT Apps SDK build for a desktop annotation workflow.
+Open-source companion workflow for anchored review of long AI-generated documents.
 
-This app renders a long AI-generated Markdown/text document inside a ChatGPT Apps SDK widget, lets the reviewer attach comments to exact review blocks, and builds a revision request from confirmed comments only.
+The product renders long Markdown/text as review blocks, lets the reviewer attach comments to exact blocks, marks the comments that should drive revision, and generates a confirmed-only revision request.
 
 Public source repository: https://github.com/zhengxuancheng/ai-annotated-review
 
+Current release path:
+
+- Public web app at `/app` on the deployed server.
+- Chrome side panel extension for ChatGPT web and Claude web.
+- CLI adapter for Codex CLI, Claude Code, and other terminal workflows.
+- ChatGPT Apps SDK adapter retained as a technical preview for Developer Mode and possible future official submission.
+
 Current boundary:
 
-- First target: desktop ChatGPT Apps SDK.
 - No native ChatGPT message bubble modification.
-- No cloud sync, accounts, billing, telemetry, or external LLM API integration.
-- Not publicly submitted or approved yet.
+- No native Claude message bubble modification.
+- No scraping or hidden full-chat import.
+- No accounts, billing, telemetry, external LLM API calls, or cloud sync.
+- Revision requests are sent, copied, or exported only after explicit user action.
 - Licensed under Apache-2.0.
 
 ## Local Commands
@@ -21,39 +29,96 @@ npm install
 npm test
 npm run typecheck
 npm run build
+npm run verify:adapters
 npm run verify
-npm run verify:submission:local
-npm run verify:submission:strict
-npm run capture:screenshots
-npm run smoke:container
-npm run smoke:remote
-npm run start -w @ai-annotated-review/chatgpt-app-server
 ```
 
-MCP endpoint:
+Use Node >=22. In Codex Desktop, the bundled Node runtime is known to work:
 
-```text
-http://localhost:8787/mcp
+```bash
+PATH="/Users/liujinxing/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" npm_config_prefix="/Users/liujinxing/.npm-codex-node24" npm run verify
 ```
 
-Health and privacy routes:
+## Web App
 
-```text
-http://localhost:8787/health
-http://localhost:8787/privacy
-```
-
-Local widget preview:
+Local widget/web preview:
 
 ```bash
 npm run preview:web
 ```
 
-Then open:
+Open:
 
 ```text
 http://127.0.0.1:5173/
 ```
+
+Production Worker routes:
+
+```text
+/app      public review web app
+/mcp      MCP endpoint for Apps SDK technical preview
+/health   deployment health JSON
+/privacy  privacy policy
+```
+
+## Browser Extension
+
+Build the Chrome side panel extension:
+
+```bash
+npm run build -w @ai-annotated-review/browser-extension
+```
+
+Load this folder in Chrome's extension page:
+
+```text
+apps/browser-extension/dist
+```
+
+The extension requests only:
+
+- `activeTab`
+- `scripting`
+- `sidePanel`
+- host permissions for `chatgpt.com`, `chat.openai.com`, and `claude.ai`
+
+It imports only the text the user has selected in the active tab. It does not scrape the whole page.
+
+## CLI
+
+Build the CLI:
+
+```bash
+npm run build -w @ai-annotated-review/cli
+```
+
+Example terminal workflow:
+
+```bash
+node apps/cli/dist/index.js create examples/fixtures/product-plan.md --out review.json --title "Review"
+node apps/cli/dist/index.js blocks review.json
+node apps/cli/dist/index.js annotate review.json --block BLOCK_ID_FROM_BLOCKS --title "Clarify" --body "Make this section more concrete." --status confirmed --out review.json
+node apps/cli/dist/index.js pack review.json --out revision-pack.md
+```
+
+The CLI does not send prompts to any AI service. It creates files that can be pasted or attached back into Codex CLI, Claude Code, ChatGPT, or Claude.
+
+## ChatGPT Apps SDK Technical Preview
+
+Local MCP endpoint:
+
+```text
+http://localhost:8787/mcp
+```
+
+Run:
+
+```bash
+npm run start -w @ai-annotated-review/chatgpt-app-server
+```
+
+The official ChatGPT App Directory path is paused because publisher verification is an owner-side gate. The code remains useful for Developer Mode validation and future verified submission, but this repository does not claim public ChatGPT App Directory availability.
 
 ## Key Docs
 
@@ -63,26 +128,14 @@ http://127.0.0.1:5173/
 - [Usage tutorial](docs/tutorial.md)
 - [Architecture](docs/architecture.md)
 - [Privacy model](docs/privacy-model.md)
-- [Demo script](docs/demo-script.md)
-- [Production deployment notes](docs/deployment/chatgpt-app-production.md)
-- [Deployment resource check](docs/research/deployment-resource-check-2026-05-18.md)
+- [Non-directory release plan](docs/strategy/non-directory-release-plan.md)
+- [Alternative platform resource check](docs/research/alternative-platform-resource-check-2026-05-18.md)
 - [Verification report](docs/development/verification-report.md)
-- [Submission checklist](docs/submission/submission-checklist.md)
-- [OpenAI dashboard packet](docs/submission/openai-dashboard-packet.md)
-- [Publication roadmap](docs/submission/publication-roadmap.md)
-- [Submission test cases](docs/submission/test-cases.md)
-- [Privacy policy](docs/legal/privacy-policy.md)
 - [Resource decisions](docs/research/resource-decision-record.md)
 - [Patentability notes](docs/ip/patentability-notes.md)
-- [Public GitHub checklist](docs/release/public-github-checklist.md)
 
 ## Publication Status
 
-The repo now contains a submission metadata draft at [chatgpt-app-submission.json](chatgpt-app-submission.json), a configurable widget domain/CSP path, and local publication-readiness checks.
+The source repository is public. The current practical release target is the public web app plus Chrome side panel extension plus CLI adapter.
 
-The source repository is public. The ChatGPT app itself has not been submitted to or approved by OpenAI yet.
-
-Remaining external release gates:
-
-- mobile smoke,
-- OpenAI dashboard identity/data-residency prerequisites.
+The ChatGPT Apps SDK adapter has not been submitted to or approved by OpenAI for App Directory distribution.

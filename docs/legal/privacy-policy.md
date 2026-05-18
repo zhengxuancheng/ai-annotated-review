@@ -1,42 +1,42 @@
 # Privacy Policy
 
-Status: public policy text for the current ChatGPT Apps SDK production candidate.
+Status: public policy text for the current web app, browser extension, CLI adapter, and Apps SDK technical preview.
 
 Last updated: 2026-05-18
 
 ## Overview
 
-AI Annotated Review helps users review long AI-generated documents with block-level annotations inside a ChatGPT app widget. The app does not create user accounts, provide billing, sync data across devices, or call an external LLM API from this server.
+AI Annotated Review helps users review long AI-generated documents with block-level annotations in a public web app, browser side panel, CLI workflow, or ChatGPT Apps SDK technical preview. The app does not create user accounts, provide billing, sync data across devices, or call an external LLM API from this server.
 
 ## Information Processed
 
-The MCP tool processes the Markdown or plain text document that the user explicitly asks ChatGPT to open for review, plus optional title and source label fields.
+The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool.
 
-Inside the widget, the app processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user.
+Inside the review UI or CLI session, the app processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user.
 
 ## Information Not Requested
 
-The app does not ask for credentials, payment information, government identifiers, precise location, full conversation history, or raw chat transcripts.
+The app does not ask for credentials, payment information, government identifiers, precise location, full conversation history, raw chat transcripts, API keys, or account passwords.
 
 ## How Information Is Used
 
-Document text is parsed into review blocks so the widget can render an annotation surface. Confirmed annotations are used to build a revision request only after the user confirms that action.
+Document text is parsed into review blocks so the app can render an annotation surface. Confirmed annotations are used to build a revision request only after the user confirms that action.
 
 ## Storage
 
-The current app does not store review sessions in an application database. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability.
+The current app does not store review sessions in an application database. Public web and extension sessions live in browser memory until the user exports them. CLI sessions are written only to files selected by the user. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability.
 
 ## Retention
 
-The app does not maintain its own persistent review-session database. Review state is intended for the active ChatGPT widget experience. Hosting-provider operational logs, if generated, are retained according to the hosting provider's standard infrastructure policies.
+The app does not maintain its own persistent review-session database. Review state is intended for the active browser, CLI, or Apps SDK widget experience. Hosting-provider operational logs, if generated, are retained according to the hosting provider's standard infrastructure policies.
 
 ## Recipients
 
-The app sends a revision request back to ChatGPT only after the user explicitly confirms. The app is hosted on Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service.
+The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. The hosted web and MCP preview are served from Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service.
 
 ## Sharing
 
-The app does not sell personal data. The app sends a revision request back to ChatGPT only after the user explicitly confirms. By default, that request contains confirmed annotations and necessary local context, not the full original document.
+The app does not sell personal data. The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. By default, that request contains confirmed annotations and necessary local context, not the full original document.
 
 ## User Control
 

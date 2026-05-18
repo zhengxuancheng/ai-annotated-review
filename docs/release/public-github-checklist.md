@@ -54,12 +54,14 @@ npm run verify
 
 ## Public Claims To Preserve
 
-- The app is an open-source ChatGPT Apps SDK project.
-- The first target is desktop ChatGPT.
-- The app renders an embedded review widget.
-- The app does not modify native ChatGPT message bubbles.
+- The app is an open-source companion workflow for reviewing long AI outputs.
+- Current practical targets are public web app, Chrome side panel extension, and CLI adapter.
+- The ChatGPT Apps SDK adapter is a technical preview.
+- The app renders its own review surface.
+- The app does not modify native ChatGPT or Claude message bubbles.
+- The browser extension imports selected text only.
 - The app is not OpenAI-approved until dashboard approval happens.
-- Future adapters are roadmap items, not current v1 support.
+- Claude Desktop MCPB, VS Code/Cursor, and deeper Codex/Claude skills are roadmap items, not current v1 support.
 
 ## Completed GitHub Actions
 

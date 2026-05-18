@@ -3,6 +3,8 @@
 Date: 2026-05-18
 Status: active private implementation plan
 
+Status note, 2026-05-18: this plan began as an Apps SDK-first plan. The active release path now adds public web app, Chrome side panel extension, and CLI adapter, while retaining the Apps SDK adapter as a technical preview. See `docs/strategy/non-directory-release-plan.md`.
+
 ## App Archetype
 
 Primary archetype: `react-widget` ChatGPT Apps SDK app with a Node MCP server.

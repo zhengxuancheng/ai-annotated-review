@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
-  "description": "Desktop ChatGPT Apps SDK workflow for anchored review of long AI-generated documents.",
+  "description": "Open-source workflow for anchored review of long AI-generated documents.",
   "repository": {
     "type": "git",
     "url": "https://github.com/zhengxuancheng/ai-annotated-review.git"
@@ -18,9 +18,10 @@
     "npm": ">=10"
   },
   "scripts": {
-    "build": "npm run build:packages && npm run build:app",
+    "build": "npm run build:packages && npm run build:app && npm run build:adapters",
     "build:packages": "npm run build -w @ai-annotated-review/annotation-model && npm run build -w @ai-annotated-review/markdown-block-parser && npm run build -w @ai-annotated-review/review-core && npm run build -w @ai-annotated-review/revision-prompt-builder",
     "build:app": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && npm run build:worker-widget && npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker",
+    "build:adapters": "npm run build -w @ai-annotated-review/browser-extension && npm run build -w @ai-annotated-review/cli",
     "build:worker-widget": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && node scripts/generate-worker-widget.mjs",
     "dev": "npm run dev -w @ai-annotated-review/chatgpt-app-server",
     "preview:web": "npm run dev -w @ai-annotated-review/chatgpt-app-web",
@@ -31,7 +32,8 @@
     "smoke:container": "node scripts/smoke-container.mjs",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "verify": "npm test && npm run typecheck && npm run build && node scripts/verify-functional-claims.mjs && npm run smoke:mcp && npm run smoke:ui && npm run verify:worker && npm run verify:license && npm run verify:reality && npm run verify:deployment-config && npm run verify:submission:local",
+    "verify": "npm test && npm run typecheck && npm run build && node scripts/verify-functional-claims.mjs && node scripts/verify-adapters.mjs && npm run smoke:mcp && npm run smoke:ui && npm run verify:worker && npm run verify:license && npm run verify:reality && npm run verify:deployment-config && npm run verify:submission:local",
+    "verify:adapters": "npm run build:adapters && node scripts/verify-adapters.mjs",
     "verify:deployment-config": "node scripts/verify-deployment-config.mjs",
     "verify:functionality": "npm run build && node scripts/verify-functional-claims.mjs && npm run smoke:mcp && npm run smoke:ui",
     "verify:license": "node scripts/verify-license.mjs",
@@ -45,7 +47,9 @@
     "packages/*",
     "apps/chatgpt-app/server",
     "apps/chatgpt-app/web",
-    "apps/chatgpt-app/cloudflare-worker"
+    "apps/chatgpt-app/cloudflare-worker",
+    "apps/browser-extension",
+    "apps/cli"
   ],
   "dependencies": {
     "@floating-ui/react": "^0.27.19",

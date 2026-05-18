@@ -3,6 +3,8 @@
 Date: 2026-05-18
 Status: Implemented as private developer-mode demo after owner approval on 2026-05-18. Original external review was `PASS WITH CONDITIONS`; those conditions remain active release gates.
 
+Status note, 2026-05-18: this Phase 0 proposal is historical. The owner later paused official ChatGPT App Directory submission and redirected the active release path to public web app, Chrome side panel extension, and CLI adapter. See `docs/strategy/non-directory-release-plan.md` for the current direction.
+
 ## 1. Product Definition
 
 AI Annotated Review is an open-source workflow for reviewing and revising long AI-generated outputs. It lets a user open a long report inside a ChatGPT Apps SDK widget, read it as a document, attach comments to specific blocks, mark which comments are confirmed, and send a precise revision instruction pack back to ChatGPT.

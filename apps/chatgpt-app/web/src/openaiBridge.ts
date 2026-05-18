@@ -131,7 +131,17 @@ export async function initializeMcpBridge(): Promise<void> {
   }
 }
 
-export async function sendRevisionFollowUp(prompt: string): Promise<"sent" | "fallback"> {
+export type RevisionDeliveryMode = "send" | "copy";
+export type RevisionDeliveryResult = "sent" | "copied" | "fallback";
+
+export function getRevisionDeliveryMode(): RevisionDeliveryMode {
+  if (window.openai?.sendFollowUpMessage || window.parent !== window) {
+    return "send";
+  }
+  return "copy";
+}
+
+export async function sendRevisionFollowUp(prompt: string): Promise<RevisionDeliveryResult> {
   if (window.openai?.sendFollowUpMessage) {
     await window.openai.sendFollowUpMessage({ prompt, scrollToBottom: true });
     return "sent";
@@ -143,6 +153,11 @@ export async function sendRevisionFollowUp(prompt: string): Promise<"sent" | "fa
       content: [{ type: "text", text: prompt }]
     });
     return "sent";
+  }
+
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(prompt);
+    return "copied";
   }
 
   return "fallback";

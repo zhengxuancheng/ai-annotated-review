@@ -4,12 +4,12 @@ const privacySections = [
   {
     heading: "Overview",
     body:
-      "AI Annotated Review helps users review long AI-generated documents with block-level annotations inside a ChatGPT app widget. The app does not create user accounts, provide billing, sync data across devices, or call an external LLM API from this server."
+      "AI Annotated Review helps users review long AI-generated documents with block-level annotations in a public web app, browser side panel, CLI workflow, or ChatGPT Apps SDK technical preview. The app does not create user accounts, provide billing, sync data across devices, or call an external LLM API from this server."
   },
   {
     heading: "Information processed",
     body:
-      "The MCP tool processes the Markdown or plain text document that the user explicitly asks ChatGPT to open for review, plus optional title and source label fields. The app also processes annotations, statuses, priorities, and generated revision instructions created by the user in the widget."
+      "The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool. The app also processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user."
   },
   {
     heading: "Information not requested",
@@ -24,22 +24,22 @@ const privacySections = [
   {
     heading: "Recipients",
     body:
-      "The app sends a revision request back to ChatGPT only after the user explicitly confirms. The app is hosted on Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service."
+      "The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. The hosted web and MCP preview are served from Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service."
   },
   {
     heading: "Storage",
     body:
-      "The current app does not store review sessions in an application database. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability."
+      "The current app does not store review sessions in an application database. Public web and extension sessions live in browser memory until the user exports them. CLI sessions are written only to files selected by the user. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability."
   },
   {
     heading: "Retention",
     body:
-      "The app does not maintain its own persistent review-session database. Review state is intended for the active ChatGPT widget experience. Hosting-provider operational logs, if generated, are retained according to the hosting provider's standard infrastructure policies."
+      "The app does not maintain its own persistent review-session database. Review state is intended for the active browser, CLI, or Apps SDK widget experience. Hosting-provider operational logs, if generated, are retained according to the hosting provider's standard infrastructure policies."
   },
   {
     heading: "Sharing",
     body:
-      "The app does not sell personal data. The app sends a revision request back to ChatGPT only after the user explicitly confirms. By default, that request contains confirmed annotations and necessary local context, not the full original document."
+      "The app does not sell personal data. The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. By default, that request contains confirmed annotations and necessary local context, not the full original document."
   },
   {
     heading: "User control",

@@ -1,7 +1,7 @@
 # Resource Decision Record
 
 Date: 2026-05-18
-Status: accepted for private implementation
+Status: accepted for public web, browser-extension, CLI, and Apps SDK technical-preview implementation
 
 This record exists so implementation does not drift into random dependency adoption. Public-facing metrics must be rechecked before publication.
 
@@ -18,6 +18,9 @@ This record exists so implementation does not drift into random dependency adopt
 - Cloudflare Remote MCP server guide: `https://developers.cloudflare.com/agents/guides/remote-mcp-server/`
 - Cloudflare `createMcpHandler` API reference: `https://developers.cloudflare.com/agents/api-reference/mcp-handler-api/`
 - Cloudflare ChatGPT App guide: `https://developers.cloudflare.com/agents/guides/chatgpt-app/`
+- Chrome Side Panel API: `https://developer.chrome.com/docs/extensions/reference/api/sidePanel`
+- Chrome Scripting API: `https://developer.chrome.com/docs/extensions/reference/api/scripting`
+- Chrome extension activeTab permission: `https://developer.chrome.com/docs/extensions/develop/concepts/activeTab`
 
 Key implementation consequences:
 
@@ -26,8 +29,9 @@ Key implementation consequences:
 - Keep `structuredContent` compact because the model reads it.
 - Put the full document and block payload in `_meta` because it is widget-only.
 - Every follow-up revision request must require explicit user action.
-- Public submission requires HTTPS hosting, CSP, test cases, privacy policy, and verified publisher setup. The repo now has a stable HTTPS MCP endpoint, CSP metadata, test cases, production desktop screenshot evidence, a privacy policy URL, support via GitHub issues, and strict submission checks; OpenAI account-side gates remain.
+- Public Apps SDK submission requires HTTPS hosting, CSP, test cases, privacy policy, and verified publisher setup. The repo now has a stable HTTPS MCP endpoint, CSP metadata, test cases, production desktop screenshot evidence, a privacy policy URL, support via GitHub issues, and strict submission checks; OpenAI account-side gates remain.
 - Cloudflare Workers is suitable as a stable HTTPS MCP host for this stateless app because Cloudflare documents `createMcpHandler` for stateless MCP servers without Durable Objects and shows ChatGPT Apps deployed to `workers.dev`.
+- Chrome's official Side Panel and Scripting APIs are sufficient for the first browser extension. A framework can be added later only if lifecycle complexity justifies it.
 
 ## Accepted Dependencies
 
@@ -73,7 +77,7 @@ Key implementation consequences:
 
 - GPL, LGPL, AGPL, source-available, unclear-license packages: reject unless explicitly approved.
 - ProseMirror/TipTap/MDXEditor: defer because v1 reviews generated Markdown blocks and does not need rich text editing.
-- Browser extension frameworks: defer because first target is ChatGPT Apps SDK.
+- Browser extension frameworks such as WXT or Plasmo: defer because the current MV3 side panel can be built with Vite plus official Chrome APIs.
 - External LLM SDKs/API integrations: reject for v1; ChatGPT is the conversation partner.
 - Cloud sync/database packages: defer; v1 uses message-scoped widget state and export JSON.
 - `wrangler` as a committed `devDependency`: rejected after `verify:license` showed LGPL `sharp/libvips` packages in the repo dependency tree. The repo now invokes pinned `npx wrangler@4.92.0` instead, and the package-lock scan is clean.

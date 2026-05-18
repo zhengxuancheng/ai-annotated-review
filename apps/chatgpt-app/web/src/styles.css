@@ -461,6 +461,25 @@ button:disabled {
   padding: 18px;
 }
 
+.import-modal {
+  width: min(780px, 94vw);
+}
+
+.import-grid {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 10px;
+}
+
+.import-textarea {
+  min-height: 320px;
+  max-height: 48vh;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -510,5 +529,20 @@ button:disabled {
 
   .brand h1 {
     max-width: 88vw;
+  }
+
+  .topbar-actions,
+  .pack-actions,
+  .import-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .topbar-actions {
+    display: grid;
+  }
+
+  .topbar-actions button {
+    width: 100%;
   }
 }

@@ -9,16 +9,20 @@ npm install
 npm test
 npm run typecheck
 npm run build
+npm run verify:adapters
 ```
 
 Expected result:
 
 - unit tests pass,
 - TypeScript project references pass,
-- web widget builds,
-- MCP server builds.
+- web app builds,
+- browser extension builds,
+- CLI builds and passes a create -> blocks -> annotate -> pack smoke test.
 
-## 2. Run Local Widget Preview
+## 2. Public Web App Flow
+
+Local preview:
 
 ```bash
 npm run preview:web
@@ -30,26 +34,99 @@ Open:
 http://127.0.0.1:5173/
 ```
 
-The preview uses a built-in sample session. It is useful for UI checks but does not prove ChatGPT connector behavior.
+Production Worker route after deploy:
 
-Preview workflow:
+```text
+https://your-worker.example/app
+```
 
-1. Click a document block.
-2. Enter annotation title and comment.
-3. Choose priority and status.
-4. Click `Add annotation`.
-5. Create at least three annotations.
-6. Mark two as `confirmed`.
-7. Click `Build pack`.
-8. Optionally click `Export pack` to save the generated revision request as Markdown.
-9. Click `Send revision request`.
-10. Confirm in the modal.
+Review workflow:
 
-In local preview, the send action reports that the host bridge is unavailable. Inside ChatGPT, the same action uses the Apps SDK bridge.
+1. Click `New document`.
+2. Paste a long AI-generated Markdown/text report.
+3. Click `Create review session`.
+4. Click a document block.
+5. Enter annotation title and comment.
+6. Choose priority and status.
+7. Click `Add annotation`.
+8. Create at least three annotations.
+9. Mark the revision-driving comments as `confirmed`.
+10. Click `Build pack`.
+11. Review the generated prompt.
+12. Click `Copy revision request` or `Export pack`.
+13. Paste the revision request into ChatGPT, Claude, Codex, or Claude Code yourself.
 
-## 3. Run MCP Server
+The public web app does not silently send anything back to an AI service.
 
-After `npm run build`:
+## 3. Browser Side Panel Extension
+
+Build the extension:
+
+```bash
+npm run build -w @ai-annotated-review/browser-extension
+```
+
+Load it in Chrome:
+
+1. Open `chrome://extensions`.
+2. Enable `Developer mode`.
+3. Click `Load unpacked`.
+4. Select `apps/browser-extension/dist`.
+5. Open `https://chatgpt.com` or `https://claude.ai`.
+6. Select the AI output text you want to review.
+7. Click the extension icon to open the side panel.
+8. Click `Use selected text`.
+9. Review the imported text, then click `Create review session`.
+
+The side panel imports only the text currently selected by the user in the active ChatGPT or Claude tab. It does not scrape the whole conversation.
+
+After building the revision pack, copy or export it and paste it back into ChatGPT or Claude manually.
+
+## 4. CLI Adapter
+
+Build the CLI:
+
+```bash
+npm run build -w @ai-annotated-review/cli
+```
+
+Create a review session:
+
+```bash
+node apps/cli/dist/index.js create report.md --out review.json --title "Report Review" --source-label "Codex CLI"
+```
+
+List review blocks:
+
+```bash
+node apps/cli/dist/index.js blocks review.json
+```
+
+Add a confirmed annotation:
+
+```bash
+node apps/cli/dist/index.js annotate review.json \
+  --block BLOCK_ID_FROM_BLOCKS \
+  --title "Clarify this section" \
+  --body "Make the claim more concrete and add one example." \
+  --priority P1 \
+  --status confirmed \
+  --out review.json
+```
+
+Build the revision pack:
+
+```bash
+node apps/cli/dist/index.js pack review.json --out revision-pack.md
+```
+
+Use `revision-pack.md` as the next message or attached instruction in Codex CLI, Claude Code, ChatGPT, or Claude.
+
+## 5. ChatGPT Apps SDK Technical Preview
+
+The Apps SDK adapter is retained for Developer Mode and future official submission.
+
+Run the local MCP server:
 
 ```bash
 npm run start -w @ai-annotated-review/chatgpt-app-server
@@ -61,90 +138,15 @@ Endpoint:
 http://localhost:8787/mcp
 ```
 
-Health check:
-
-```bash
-curl http://localhost:8787/
-curl http://localhost:8787/health
-curl http://localhost:8787/privacy
-```
-
-## 4. Smoke Test MCP Tool
-
-Initialize:
-
-```bash
-curl -sS -X POST http://localhost:8787/mcp \
-  -H 'content-type: application/json' \
-  -H 'accept: application/json, text/event-stream' \
-  --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"manual-smoke","version":"0.1.0"}}}'
-```
-
-List tools:
-
-```bash
-curl -sS -X POST http://localhost:8787/mcp \
-  -H 'content-type: application/json' \
-  -H 'accept: application/json, text/event-stream' \
-  --data '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
-```
-
-Call the review tool:
-
-```bash
-curl -sS -X POST http://localhost:8787/mcp \
-  -H 'content-type: application/json' \
-  -H 'accept: application/json, text/event-stream' \
-  --data @- <<'JSON'
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"review_markdown_document","arguments":{"title":"Smoke Report","sourceLabel":"Manual smoke","markdown":"# Smoke Report\n\n## Context\n\nThis paragraph needs review.\n\n## Scope\n\n- Add comments.\n- Build a revision pack.\n"}}}
-JSON
-```
-
-Check that:
-
-- `structuredContent.ok` is `true`,
-- `structuredContent.blockCount` is greater than zero,
-- `_meta.reviewSession.document.blocks` exists.
-
-## 5. Connect To ChatGPT Developer Mode
-
-ChatGPT requires an HTTPS MCP URL. For local development, expose port `8787` with a tunnel such as ngrok or a similar HTTPS tunnel.
-
-Example:
-
-```bash
-ngrok http 8787
-```
-
-Use the HTTPS URL with `/mcp` appended:
+Local web route from the same server:
 
 ```text
-https://your-tunnel.example/mcp
+http://localhost:8787/app
 ```
 
-In ChatGPT:
+For ChatGPT Developer Mode, ChatGPT requires an HTTPS MCP URL. Use a temporary HTTPS tunnel only for development, then connect the `/mcp` URL in ChatGPT Developer Mode.
 
-1. Enable developer mode in ChatGPT settings.
-2. Create a connector.
-3. Paste the HTTPS `/mcp` URL.
-4. Save or refresh the connector after server metadata changes.
-5. Open a new desktop ChatGPT chat and enable the connector.
-
-## 6. ChatGPT Demo Prompt
-
-First generate a report:
-
-```text
-Write a detailed product proposal for an AI-assisted workflow tool. Use Markdown headings and make it long enough to require review.
-```
-
-Then ask:
-
-```text
-Open the report above in AI Annotated Review. Use the review_markdown_document tool and pass the full report Markdown.
-```
-
-Inside the widget:
+Inside the Apps SDK widget:
 
 1. Add comments while reading.
 2. Mark only revision-driving comments as `confirmed`.
@@ -153,66 +155,41 @@ Inside the widget:
 5. Click `Send revision request`.
 6. Confirm in the modal.
 
-ChatGPT should then receive the revision request and revise the original report.
+The send path is available only inside a compatible ChatGPT Apps SDK host. In local preview, public web app, and browser extension mode, the app copies or exports the revision request instead.
 
-## 7. Limits
+## 6. Limits
 
 Current hard caps:
 
 - 100,000 Unicode characters,
 - 300 review blocks.
 
-If the document exceeds a cap, the tool returns a clear error instead of attempting an unreliable import.
+If the document exceeds a cap, the parser returns a clear error instead of attempting an unreliable import.
 
-## 8. Troubleshooting
+## 7. Verification
 
-If the widget does not render:
-
-- run `npm run build`,
-- restart the MCP server,
-- refresh the ChatGPT connector,
-- verify the resource MIME type is `text/html;profile=mcp-app`.
-
-If ChatGPT cannot connect:
-
-- confirm the MCP URL ends with `/mcp`,
-- confirm the URL is HTTPS,
-- confirm the tunnel points to local port `8787`,
-- check server logs.
-
-If the revision request does not send:
-
-- confirm you are running inside ChatGPT, not local Vite preview,
-- confirm the preview modal was accepted,
-- rebuild and refresh the connector.
-- use `Export pack` as a local fallback while debugging host bridge behavior.
-
-## 9. Publication Readiness
-
-Run the local submission-readiness gate:
+Run the core verification gate:
 
 ```bash
-npm run verify:submission:local
+npm run verify
 ```
 
-This checks source-level release artifacts and reports external blockers without failing local development.
-
-Run the strict submission gate only when production hosting and owner-side release decisions are ready:
+Run adapter-specific verification:
 
 ```bash
-npm run verify:submission:strict
+npm run verify:adapters
 ```
 
-Strict mode requires production hosting, remote smoke evidence, live production ChatGPT validation evidence, and production screenshot evidence.
+`verify:adapters` checks:
 
-Generate draft local screenshots with:
+- the built Chrome extension manifest,
+- exact ChatGPT/Claude host permissions,
+- no broad `<all_urls>` access,
+- selected-text-only import boundary,
+- CLI create/blocks/annotate/pack behavior.
 
-```bash
-npm run capture:screenshots
-```
+## 8. Release Boundary
 
-Use production ChatGPT connector screenshots before OpenAI submission. The current production desktop screenshot is `docs/submission/screenshots/production-review-widget-desktop.png`.
+This project currently ships as source plus deployable web/extension/CLI artifacts.
 
-## 10. Release Boundary
-
-This is not yet a public approved app. Do not announce ChatGPT directory availability until required mobile smoke, OpenAI dashboard prerequisites, final submission, and OpenAI approval are complete.
+Do not claim official ChatGPT App Directory availability unless OpenAI publisher verification, final dashboard submission, and OpenAI approval are completed later.

@@ -7,6 +7,7 @@
     { "path": "packages/revision-prompt-builder" },
     { "path": "apps/chatgpt-app/server" },
     { "path": "apps/chatgpt-app/web" },
-    { "path": "apps/chatgpt-app/cloudflare-worker" }
+    { "path": "apps/chatgpt-app/cloudflare-worker" },
+    { "path": "apps/cli" }
   ]
 }

@@ -1,0 +1,20 @@
+{
+  "name": "@ai-annotated-review/cli",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "ai-annotated-review": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test:smoke": "node dist/index.js --help"
+  },
+  "dependencies": {
+    "@ai-annotated-review/annotation-model": "0.1.0",
+    "@ai-annotated-review/markdown-block-parser": "0.1.0",
+    "@ai-annotated-review/review-core": "0.1.0",
+    "@ai-annotated-review/revision-prompt-builder": "0.1.0"
+  }
+}

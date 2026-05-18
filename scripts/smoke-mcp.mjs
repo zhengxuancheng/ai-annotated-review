@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 const PORT = parsePort(process.env.SMOKE_MCP_PORT, 8977);
 const MCP_URL = `http://127.0.0.1:${PORT}/mcp`;
 const ROOT_URL = `http://127.0.0.1:${PORT}/`;
+const APP_URL = `http://127.0.0.1:${PORT}/app`;
 const HEALTH_URL = `http://127.0.0.1:${PORT}/health`;
 const PRIVACY_URL = `http://127.0.0.1:${PORT}/privacy`;
 const TEST_PUBLIC_ORIGIN = "https://ai-annotated-review.example.com";
@@ -33,7 +34,12 @@ try {
   const health = await fetchJson(HEALTH_URL);
   assert(health.ok === true, "health endpoint did not return ok");
   assert(health.mcpPath === "/mcp", "health endpoint returned wrong MCP path");
+  assert(health.publicAppPath === "/app", "health endpoint returned wrong public app path");
   assert(health.widgetDomainConfigured === true, "health endpoint did not report widget domain");
+
+  const appHtml = await fetchText(APP_URL);
+  assert(appHtml.includes("<div id=\"root\">"), "public /app route missing React root");
+  assert(appHtml.includes("AI Annotated Review"), "public /app route missing app title");
 
   const privacy = await fetchText(PRIVACY_URL);
   assert(privacy.includes("AI Annotated Review Privacy Policy"), "privacy route missing policy title");

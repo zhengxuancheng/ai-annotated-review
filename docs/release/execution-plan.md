@@ -1,10 +1,12 @@
 # Release Execution Plan
 
-Status: active working plan. Do not treat this as a completed release record.
+Status: superseded working plan. Do not treat this as a completed release record.
+
+Status note, 2026-05-18: official ChatGPT App submission is paused. The active release path is public web app, Chrome side panel extension, and CLI adapter. This document remains as historical Apps SDK technical-preview release evidence.
 
 ## Goal
 
-Ship AI Annotated Review as a public ChatGPT App after proving that the product works locally, through a public HTTPS MCP endpoint, inside ChatGPT Developer Mode, and through OpenAI's submission review process.
+Historical goal: ship AI Annotated Review as a public ChatGPT App after proving that the product works locally, through a public HTTPS MCP endpoint, inside ChatGPT Developer Mode, and through OpenAI's submission review process.
 
 ## Phase 1: Prove The Product Is Real Locally
 

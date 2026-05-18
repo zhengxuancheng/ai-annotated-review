@@ -1,5 +1,7 @@
 # Publication Roadmap
 
+Status note, 2026-05-18: official ChatGPT App submission is paused. This roadmap is retained for the Apps SDK technical preview and future verified submission, not the active public release path.
+
 ## Stage 1: Local Submission Package
 
 Goal: make the repository internally consistent with Apps SDK submission requirements.

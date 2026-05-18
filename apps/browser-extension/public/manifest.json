@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "AI Annotated Review Companion",
+  "version": "0.1.0",
+  "description": "Review long AI outputs from ChatGPT and Claude in a browser side panel.",
+  "action": {
+    "default_title": "Open AI Annotated Review"
+  },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

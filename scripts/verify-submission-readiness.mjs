@@ -32,7 +32,7 @@ assert((submission.test_cases ?? []).length >= 5, "submission JSON needs at leas
 assert((submission.negative_test_cases ?? []).length >= 3, "submission JSON needs at least 3 negative cases");
 
 await mustContain("README.md", "No native ChatGPT message bubble modification");
-await mustContain("README.md", "Not publicly submitted or approved yet");
+await mustContain("README.md", "does not claim public ChatGPT App Directory availability");
 await mustContain("docs/privacy-model.md", "confirmed annotations only");
 await mustContain("docs/privacy-model.md", "publication-track");
 await mustContain("docs/development/verification-report.md", "Not Yet Verified");
@@ -44,6 +44,7 @@ const server = await readFile("apps/chatgpt-app/server/src/index.ts", "utf8");
 const appServer = await readFile("apps/chatgpt-app/server/src/app.ts", "utf8");
 mustMatch(server, /APP_WIDGET_DOMAIN/, "server must support APP_WIDGET_DOMAIN");
 mustMatch(server, /APP_CSP_CONNECT_DOMAINS/, "server must support APP_CSP_CONNECT_DOMAINS");
+mustMatch(server, /url\.pathname === "\/app"/, "server must expose /app");
 mustMatch(server, /url\.pathname === "\/health"/, "server must expose /health");
 mustMatch(server, /url\.pathname === "\/privacy"/, "server must expose /privacy");
 mustMatch(appServer, /outputSchema:\s*reviewToolOutputSchema/, "tool must declare outputSchema");
@@ -53,7 +54,7 @@ mustMatch(appServer, /openWorldHint:\s*false/, "tool must declare openWorldHint 
 
 const guardrails = await readFile("AGENTS.md", "utf8");
 mustMatch(guardrails, /Do not submit the app in the OpenAI dashboard/, "AGENTS must preserve no-auto-submit guardrail");
-mustMatch(guardrails, /global data residency project/, "AGENTS must preserve data residency gate");
+mustMatch(guardrails, /Dashboard prerequisites are paused owner-side gates/, "AGENTS must preserve paused dashboard gate");
 
 if (!existsSync("LICENSE")) {
   blockers.push("License file is intentionally absent; public repository release needs a license/patent decision.");
