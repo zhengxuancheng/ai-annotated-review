@@ -4,6 +4,8 @@ Publication-track ChatGPT Apps SDK build for a desktop annotation workflow.
 
 This app renders a long AI-generated Markdown/text document inside a ChatGPT Apps SDK widget, lets the reviewer attach comments to exact review blocks, and builds a revision request from confirmed comments only.
 
+Public source repository: https://github.com/zhengxuancheng/ai-annotated-review
+
 Current boundary:
 
 - First target: desktop ChatGPT Apps SDK.
@@ -77,6 +79,8 @@ http://127.0.0.1:5173/
 ## Publication Status
 
 The repo now contains a submission metadata draft at [chatgpt-app-submission.json](chatgpt-app-submission.json), a configurable widget domain/CSP path, and local publication-readiness checks.
+
+The source repository is public. The ChatGPT app itself has not been submitted to or approved by OpenAI yet.
 
 Remaining external release gates:
 

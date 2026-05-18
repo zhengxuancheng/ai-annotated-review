@@ -1,6 +1,6 @@
 # Public GitHub Checklist
 
-Status: release-prep checklist for the public source repository. This is separate from OpenAI app approval.
+Status: public source repository created. This is separate from OpenAI app approval.
 
 ## Repository
 
@@ -9,6 +9,8 @@ Status: release-prep checklist for the public source repository. This is separat
 - Target visibility: public
 - License: Apache-2.0
 - Default branch: `main`
+- Repository URL: `https://github.com/zhengxuancheng/ai-annotated-review`
+- Created and pushed: 2026-05-18
 
 ## Required Files
 
@@ -58,6 +60,13 @@ npm run verify
 - The app does not modify native ChatGPT message bubbles.
 - The app is not OpenAI-approved until dashboard approval happens.
 - Future adapters are roadmap items, not current v1 support.
+
+## Completed GitHub Actions
+
+- [x] Created public GitHub repository `zhengxuancheng/ai-annotated-review`.
+- [x] Pushed local `main` branch.
+- [x] Set repository description.
+- [x] Set repository topics: `chatgpt-apps-sdk`, `mcp`, `markdown`, `annotation`, `ai-tools`, `open-source`.
 
 ## Do Not Publish
 
