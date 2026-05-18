@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 17:59 CST
+Latest audit refresh: 2026-05-18 18:05 CST
 
 ## Commands Run
 
@@ -71,6 +71,7 @@ Results:
 - Continuous dictation update verification passed on 2026-05-18: the first `npm run smoke:ui` red test failed on `Dictation must request continuous recognition`, then the implementation was updated and `smoke:ui` passed with `voiceDictationIsContinuous`, `voiceDictationKeepsMultipleSegments`, `voiceDictationRestartsAfterPause`, and `voiceDictationStopsOnlyByUser`. Full `npm run verify` passed under Codex's bundled Node v24.14.0. Production Worker redeploy succeeded with version ID `039be1a2-7875-4bfe-ac9f-006163d8ad67`; remote smoke passed, and `/app` contains the updated listening/stop strings.
 - Speech cleanup update verification passed on 2026-05-18: `apps/chatgpt-app/web/test/speechPostProcessing.test.ts` first failed because the module did not exist, then passed with tests for `Phase 0A` phrase hints, `face0a` / `face01` normalization, Chinese punctuation restoration, and the no-`Phase` false-positive guard. Full `npm run verify` passed with 5 test files and 13 tests. `smoke:ui` now verifies `voicePhraseHintsUseBlockContext`. Production Worker redeploy succeeded with version ID `09402df3-4c65-412c-a053-631f193cdaee`; remote smoke passed, and `/app` contains `SpeechRecognitionPhrase` and `Phase 0A`.
 - Speech phrase-hint fallback verification passed on 2026-05-18: `smoke:ui` now simulates a browser that exposes `SpeechRecognitionPhrase` but raises `phrases-not-supported` on start. The first red run timed out waiting for fallback. After the fix, `smoke:ui` passed with `voicePhraseHintFailureFallsBack`, proving dictation restarts without phrase hints and does not leave the user at `Voice input stopped.` Full `npm run verify` passed with 5 test files and 13 tests.
+- Dictated Chinese punctuation update verification passed on 2026-05-18: a screenshot-derived long Chinese comment first failed because it only received a final sentence mark. After the fix, `speechPostProcessing.test.ts` verifies comma/question/sentence punctuation around `所以说呀`, `Phase 0A`, `对吧`, `说一说`, and `笼统`. Full `npm run verify` passed with 5 test files and 14 tests.
 
 ## Skill-Driven Audit Refresh
 

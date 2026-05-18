@@ -35,6 +35,24 @@ describe("speech post processing", () => {
     expect(normalized.endsWith("。")).toBe(true);
   });
 
+  it("adds punctuation to long dictated Chinese review comments", () => {
+    const context = createDictationContext({
+      text: "不要让 Codex 直接进入 Phase 1/2/3 全实现。下一步应该是一个很短的 Phase 0A：仓库初始化与开发护栏。"
+    });
+
+    const normalized = normalizeDictatedComment(
+      "你刚打开了所以说呀就是这个这个很短的 Phase 0A 怎么仓库初始化语开发护栏这个 Phase 0A 他到底包含哪些就这个环节对吧到底要怎么开放你要详细的说一说不要这么笼统",
+      context
+    );
+
+    expect(normalized).toContain("你刚打开了，所以说呀，就是");
+    expect(normalized).toContain("Phase 0A，怎么");
+    expect(normalized).toContain("对吧？到底");
+    expect(normalized).toContain("说一说，不要");
+    expect(normalized).toContain("笼统。");
+    expect(countChinesePunctuation(normalized)).toBeGreaterThanOrEqual(6);
+  });
+
   it("does not replace face when the reviewed block has no Phase term", () => {
     const context = createDictationContext({
       text: "请补充人物表情和画面描述。"
@@ -43,3 +61,7 @@ describe("speech post processing", () => {
     expect(normalizeDictatedComment("这个 face 不要改", context)).toContain("face");
   });
 });
+
+function countChinesePunctuation(value: string): number {
+  return [...value.matchAll(/[，。？！]/g)].length;
+}

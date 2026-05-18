@@ -106,6 +106,21 @@ function restoreLightChinesePunctuation(text: string): string {
   if (!CHINESE_CHAR_PATTERN.test(text)) return text;
 
   let punctuated = text
+    .replace(/这个这个/g, "这个")
+    .replace(/(?<=你刚打开了)(?=所以|那|然后|就是|这个)/g, "，")
+    .replace(/(?<=所以说呀)(?=就是|这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/(?<=所以说)(?=就是|这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/(?<=然后)(?=就是|这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/(?<=但是)(?=就是|这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/(?<=不过)(?=就是|这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/(?<=就是)(?=这个|你|我|他|它|要|应该|可以|能够|Phase)/g, "，")
+    .replace(/\b(Phase\s0A)(?=\s*(?:怎么|他|它|到底|具体|包含|要|应该))/gi, "$1，")
+    .replace(/(?<=开发护栏)(?=这个|那|它|他|Phase)/g, "，")
+    .replace(/(?<=包含哪些)(?=就|这个|那|具体|到底|要)/g, "，")
+    .replace(/(?<=就这个环节)(?=对吧|到底|要|应该)/g, "，")
+    .replace(/(?<=对吧)(?=到底|你|这个|那|要|应该|可以|能够|$)/g, "？")
+    .replace(/(?<=到底要怎么开放)(?=你|这个|那|要|应该|可以|能够)/g, "，")
+    .replace(/(?<=说一说)(?=不要|不能|但是|不过|然后|所以|$)/g, "，")
     .replace(/啊(?=(就是|那|然后|所以|但是|不过|你要|去))/g, "，")
     .replace(/呢(?=(是不是|对不对|然后|那|所以|但是))/g, "呢？")
     .replace(/(?<!^)(是不是)(?=你|这个|那|要|应该|可以|能够)/g, "是不是，")
@@ -113,7 +128,11 @@ function restoreLightChinesePunctuation(text: string): string {
     .replace(/(?<=说一说)(?=啊|就是|这个|下一步)/g, "，")
     .replace(/(?<=具体)(?=要|他|它|这|那)/g, "，")
     .replace(/(?<=做哪些)(?=事|事情)/g, "，")
-    .replace(/(?<=对不对)(?=你|这个|那|要|应该|可以|能够|$)/g, "？");
+    .replace(/(?<=对不对)(?=你|这个|那|要|应该|可以|能够|$)/g, "？")
+    .replace(/，{2,}/g, "，")
+    .replace(/？{2,}/g, "？")
+    .replace(/，(?=[。？！])/g, "")
+    .replace(/([，。？！])\s+([\u3400-\u9fff])/g, "$1$2");
 
   if (punctuated.length >= 18 && !SENTENCE_END_PATTERN.test(punctuated)) {
     punctuated += "。";
