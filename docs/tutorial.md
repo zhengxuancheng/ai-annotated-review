@@ -215,4 +215,4 @@ Use production ChatGPT connector screenshots before OpenAI submission. The curre
 
 ## 10. Release Boundary
 
-This is not yet a public approved app. Do not submit or announce availability until the privacy policy URL, support contact, app metadata, public test cases, required mobile smoke, OpenAI dashboard prerequisites, and final approval are complete.
+This is not yet a public approved app. Do not announce ChatGPT directory availability until required mobile smoke, OpenAI dashboard prerequisites, final submission, and OpenAI approval are complete.

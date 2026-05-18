@@ -26,7 +26,7 @@ Key implementation consequences:
 - Keep `structuredContent` compact because the model reads it.
 - Put the full document and block payload in `_meta` because it is widget-only.
 - Every follow-up revision request must require explicit user action.
-- Public submission requires HTTPS hosting, CSP, test cases, privacy policy, and verified publisher setup. The repo now has a stable HTTPS MCP endpoint, CSP metadata, test cases, production desktop screenshot evidence, and strict submission checks; final owner-reviewed privacy/support fields and OpenAI account-side gates remain.
+- Public submission requires HTTPS hosting, CSP, test cases, privacy policy, and verified publisher setup. The repo now has a stable HTTPS MCP endpoint, CSP metadata, test cases, production desktop screenshot evidence, a privacy policy URL, support via GitHub issues, and strict submission checks; OpenAI account-side gates remain.
 - Cloudflare Workers is suitable as a stable HTTPS MCP host for this stateless app because Cloudflare documents `createMcpHandler` for stateless MCP servers without Durable Objects and shows ChatGPT Apps deployed to `workers.dev`.
 
 ## Accepted Dependencies

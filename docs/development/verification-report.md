@@ -106,7 +106,7 @@ Verified:
 - `resources/list` returned widget resource with `text/html;profile=mcp-app`.
 - `resources/read` returned inline HTML with CSP metadata.
 - `/health` returned `ok: true`.
-- `/privacy` served the draft privacy policy route.
+- `/privacy` served the public privacy policy route.
 - Widget resource metadata honored `APP_WIDGET_DOMAIN` during smoke.
 
 ## UI Smoke Test
@@ -165,6 +165,6 @@ These are not claimed as complete.
 Remaining non-source release gates:
 
 - OpenAI Platform identity verification and global data residency project setup.
-- Owner-reviewed final public privacy policy and support contact.
+- OpenAI Platform identity verification and project data residency.
 - Mobile smoke if required for final OpenAI review, while v1 remains desktop-first.
 - Official OpenAI dashboard submission and approval.

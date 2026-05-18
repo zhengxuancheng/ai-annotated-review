@@ -36,7 +36,7 @@ Sources checked:
 ## Not Yet Done
 
 - Public HTTPS MCP deployment exists at `https://ai-annotated-review.liujinxingde2008.workers.dev/mcp` and has passed remote smoke.
-- No owner-reviewed privacy policy URL exists.
+- A privacy policy URL exists at `https://ai-annotated-review.liujinxingde2008.workers.dev/privacy`.
 - No OpenAI dashboard submission has been made.
 - Production ChatGPT Developer Mode validation has passed and is recorded in `docs/submission/live-validation-report.md`.
 - No mobile smoke has been run.

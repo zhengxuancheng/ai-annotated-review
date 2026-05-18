@@ -1,6 +1,6 @@
-# Privacy Policy Draft
+# Privacy Policy
 
-Status: draft for publication readiness. Owner/legal review is required before this text is used as the public privacy policy URL in an OpenAI app submission.
+Status: public policy text for the current ChatGPT Apps SDK production candidate.
 
 Last updated: 2026-05-18
 
@@ -14,6 +14,8 @@ The MCP tool processes the Markdown or plain text document that the user explici
 
 Inside the widget, the app processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user.
 
+## Information Not Requested
+
 The app does not ask for credentials, payment information, government identifiers, precise location, full conversation history, or raw chat transcripts.
 
 ## How Information Is Used
@@ -23,6 +25,14 @@ Document text is parsed into review blocks so the widget can render an annotatio
 ## Storage
 
 The current app does not store review sessions in an application database. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability.
+
+## Retention
+
+The app does not maintain its own persistent review-session database. Review state is intended for the active ChatGPT widget experience. Hosting-provider operational logs, if generated, are retained according to the hosting provider's standard infrastructure policies.
+
+## Recipients
+
+The app sends a revision request back to ChatGPT only after the user explicitly confirms. The app is hosted on Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service.
 
 ## Sharing
 
@@ -34,4 +44,4 @@ Users decide which comments become confirmed revision instructions. Open, reject
 
 ## Contact
 
-Before public release, replace this section with the owner's public support or privacy contact address.
+For privacy or support questions, open an issue at https://github.com/zhengxuancheng/ai-annotated-review/issues. Do not include private documents, secrets, raw chat histories, credentials, or personal data in public issues.

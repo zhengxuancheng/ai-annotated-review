@@ -17,7 +17,7 @@ https://your-domain.example/health
 https://your-domain.example/privacy
 ```
 
-The `/privacy` route is a draft convenience route today. Replace its text or redirect it to the owner-reviewed policy before submission.
+The `/privacy` route serves the current public privacy policy for the production candidate.
 
 ## Environment
 

@@ -64,6 +64,6 @@ The widget uses ChatGPT widget state when available to preserve local UI state f
 
 ## Public Submission Gap
 
-Public ChatGPT app submission still requires a reviewed privacy policy URL, support contact, mobile smoke if required by review, and organization/individual verification. Production desktop screenshot evidence exists in `docs/submission/screenshots/production-review-widget-desktop.png`.
+Public ChatGPT app submission still requires mobile smoke if required by review and organization/individual verification. The current production candidate has a privacy policy URL at `https://ai-annotated-review.liujinxingde2008.workers.dev/privacy`, public support via GitHub issues, and production desktop screenshot evidence in `docs/submission/screenshots/production-review-widget-desktop.png`.
 
-The repo includes a draft privacy route at `/privacy` and a draft policy at `docs/legal/privacy-policy-draft.md`, but these are publication-readiness artifacts. They should not be treated as reviewed legal text.
+The repo includes the policy source at `docs/legal/privacy-policy.md` and serves the same policy through `/privacy`.

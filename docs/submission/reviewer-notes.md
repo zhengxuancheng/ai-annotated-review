@@ -26,7 +26,6 @@ The current v1 design uses no app account authentication.
 
 ## Known Pre-Submission Work
 
-- Replace the draft privacy policy with owner-reviewed public policy text.
 - Keep the stable Cloudflare Worker production candidate healthy through review.
 - Desktop ChatGPT web production connector testing has passed and a production screenshot is available at `docs/submission/screenshots/production-review-widget-desktop.png`.
 - Run mobile smoke only if required for final review; v1 remains desktop-first and does not claim mobile support.

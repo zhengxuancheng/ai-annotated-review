@@ -30,9 +30,9 @@ Official references checked on 2026-05-18:
 ## External Release Gates
 
 - [x] Choose final public app name: `AI Annotated Review`.
-- [ ] Choose public support contact.
+- [x] Choose public support contact: GitHub issues at `https://github.com/zhengxuancheng/ai-annotated-review/issues`.
 - [x] Decide license and patent/open-source strategy before public repository release. Decision: Apache-2.0 open source.
-- [ ] Publish a reviewed privacy policy URL.
+- [x] Publish a privacy policy URL: `https://ai-annotated-review.liujinxingde2008.workers.dev/privacy`.
 - [x] Deploy MCP server to a public HTTPS origin outside local networks.
 - [x] Deploy Cloudflare Worker to stable `workers.dev` or custom-domain origin: `https://ai-annotated-review.liujinxingde2008.workers.dev`.
 - [x] Set production `APP_WIDGET_DOMAIN` to a unique app origin.
@@ -53,7 +53,6 @@ Official references checked on 2026-05-18:
 ## Blockers To Keep Visible
 
 - Apache-2.0 `LICENSE` is present by owner decision.
-- The privacy policy text is a draft, not legal advice.
 - Live ChatGPT Developer Mode testing has passed on the stable Cloudflare Worker production candidate, but this is not OpenAI approval.
 - The current remote MCP smoke report uses the stable Cloudflare Worker production candidate.
 - The current repo has not completed mobile ChatGPT smoke testing.

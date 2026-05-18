@@ -142,8 +142,8 @@ Decisions and remaining work:
 
 - Public license: decided on 2026-05-18 as Apache-2.0.
 - Patent path: not treated as a release blocker for the current open-source path; do not publish detailed novelty claims.
-- Final public privacy policy still needs owner/legal review.
-- Support/contact URL or email still needs owner decision.
+- Public privacy policy is served at `https://ai-annotated-review.liujinxingde2008.workers.dev/privacy`.
+- Support/contact path uses GitHub issues at `https://github.com/zhengxuancheng/ai-annotated-review/issues`.
 - Public app name and publisher identity still need final dashboard values.
 
 Codex can:
@@ -161,7 +161,7 @@ Prerequisites:
 - Project has global data residency.
 - `api.apps.write` and `api.apps.read` permissions available.
 - Public MCP endpoint is stable and not a local/test-only endpoint.
-- Final privacy policy URL is live.
+- Privacy policy URL is live.
 - `npm run verify:submission:strict` passes.
 
 Codex can:
@@ -178,4 +178,4 @@ Codex must not:
 
 ## Current Next Action
 
-The current next action is final submission preparation: rerun strict readiness with production environment variables, then prepare the OpenAI submission packet while keeping owner-reviewed privacy-policy, support contact, identity/data-residency, mobile smoke, and dashboard submission gates visible.
+The current next action is OpenAI dashboard submission preparation: rerun strict readiness with production environment variables, then fill the OpenAI submission form while keeping identity/data-residency, mobile smoke, and final dashboard submission approval gates visible.

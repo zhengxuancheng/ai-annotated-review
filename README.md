@@ -36,7 +36,7 @@ MCP endpoint:
 http://localhost:8787/mcp
 ```
 
-Health and draft privacy routes:
+Health and privacy routes:
 
 ```text
 http://localhost:8787/health
@@ -71,7 +71,7 @@ http://127.0.0.1:5173/
 - [OpenAI dashboard packet](docs/submission/openai-dashboard-packet.md)
 - [Publication roadmap](docs/submission/publication-roadmap.md)
 - [Submission test cases](docs/submission/test-cases.md)
-- [Privacy policy draft](docs/legal/privacy-policy-draft.md)
+- [Privacy policy](docs/legal/privacy-policy.md)
 - [Resource decisions](docs/research/resource-decision-record.md)
 - [Patentability notes](docs/ip/patentability-notes.md)
 - [Public GitHub checklist](docs/release/public-github-checklist.md)
@@ -84,6 +84,5 @@ The source repository is public. The ChatGPT app itself has not been submitted t
 
 Remaining external release gates:
 
-- owner-reviewed public privacy policy and support contact,
 - mobile smoke,
 - OpenAI dashboard identity/data-residency prerequisites.

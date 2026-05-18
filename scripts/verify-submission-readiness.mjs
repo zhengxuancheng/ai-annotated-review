@@ -12,7 +12,7 @@ await requireFile("docs/submission/submission-checklist.md");
 await requireFile("docs/submission/publication-roadmap.md");
 await requireFile("docs/submission/test-cases.md");
 await requireFile("docs/submission/reviewer-notes.md");
-await requireFile("docs/legal/privacy-policy-draft.md");
+await requireFile("docs/legal/privacy-policy.md");
 await requireFile(".env.example");
 
 const submission = JSON.parse(await readFile("chatgpt-app-submission.json", "utf8"));
@@ -36,7 +36,7 @@ await mustContain("README.md", "Not publicly submitted or approved yet");
 await mustContain("docs/privacy-model.md", "confirmed annotations only");
 await mustContain("docs/privacy-model.md", "publication-track");
 await mustContain("docs/development/verification-report.md", "Not Yet Verified");
-await mustContain("docs/legal/privacy-policy-draft.md", "Owner/legal review is required");
+await mustContain("docs/legal/privacy-policy.md", "https://github.com/zhengxuancheng/ai-annotated-review/issues");
 await mustContain(".env.example", "APP_WIDGET_DOMAIN=");
 await mustContain(".env.example", "APP_PRIVACY_POLICY_URL=");
 
