@@ -341,6 +341,91 @@ try {
   assert(stopState.startCount === 2, `Dictation restarted after user stop; start count ${stopState.startCount}`);
   assert(stopState.stopCount === 1, `expected one user stop, got ${stopState.stopCount}`);
 
+  const phraseFallbackPage = await browser.newPage({ viewport: { width: 390, height: 860 } });
+  await phraseFallbackPage.addInitScript(() => {
+    window.__speechRecognitionInstances = [];
+    window.__speechRecognitionStartCount = 0;
+    window.__speechPhraseHintAssignmentCount = 0;
+    class FakeSpeechRecognitionPhrase {
+      constructor(phrase, boost) {
+        this.phrase = phrase;
+        this.boost = boost;
+      }
+    }
+    class FakeSpeechRecognition {
+      continuous = false;
+      interimResults = false;
+      maxAlternatives = 1;
+      lang = "en-US";
+      onend = null;
+      onerror = null;
+      onresult = null;
+      set phrases(value) {
+        this._phrases = value;
+        window.__speechPhraseHintAssignmentCount += 1;
+      }
+      get phrases() {
+        return this._phrases;
+      }
+      abort() {}
+      stop() {
+        this.onend?.();
+      }
+      start() {
+        window.__speechRecognitionStartCount += 1;
+        if (this._phrases?.length) {
+          queueMicrotask(() => this.onerror?.({ error: "phrases-not-supported" }));
+        }
+      }
+    }
+    Object.defineProperty(window, "webkitSpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition
+    });
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition
+    });
+    Object.defineProperty(window, "SpeechRecognitionPhrase", {
+      configurable: true,
+      value: FakeSpeechRecognitionPhrase
+    });
+    const OriginalFakeSpeechRecognition = FakeSpeechRecognition;
+    const TrackedSpeechRecognition = class TrackedSpeechRecognition extends OriginalFakeSpeechRecognition {
+      constructor() {
+        super();
+        window.__speechRecognitionInstances.push(this);
+      }
+    };
+    window.webkitSpeechRecognition = TrackedSpeechRecognition;
+    window.SpeechRecognition = TrackedSpeechRecognition;
+  });
+  await phraseFallbackPage.goto(URL, { waitUntil: "networkidle" });
+  await phraseFallbackPage.getByText("AI Annotated Review Demo Report").first().waitFor();
+  const fallbackBlock = phraseFallbackPage.locator(".review-block").nth(4);
+  await fallbackBlock.locator(".add-block-button").click();
+  const fallbackComposer = fallbackBlock.locator(".inline-composer");
+  await fallbackComposer.waitFor();
+  await fallbackComposer.getByRole("button", { name: /Dictate/ }).click();
+  await phraseFallbackPage.waitForFunction(() => window.__speechRecognitionStartCount === 2);
+  await fallbackComposer.getByRole("button", { name: /Stop/ }).waitFor();
+  const fallbackState = await phraseFallbackPage.evaluate(() => ({
+    instanceCount: window.__speechRecognitionInstances.length,
+    phraseHintAssignmentCount: window.__speechPhraseHintAssignmentCount
+  }));
+  assert(
+    fallbackState.instanceCount === 2,
+    `expected phrase-hint failure to restart with a fresh recognition instance, got ${fallbackState.instanceCount}`
+  );
+  assert(
+    fallbackState.phraseHintAssignmentCount === 1,
+    `expected phrase hints only on the first attempt, got ${fallbackState.phraseHintAssignmentCount}`
+  );
+  assert(
+    (await fallbackComposer.getByText("Voice input stopped.").count()) === 0,
+    "Phrase-hint fallback must not leave the user at Voice input stopped."
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -359,6 +444,7 @@ try {
         voiceDictationRestartsAfterPause: true,
         voiceDictationStopsOnlyByUser: true,
         voicePhraseHintsUseBlockContext: true,
+        voicePhraseHintFailureFallsBack: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
         consoleErrors: errorMessages.length + standaloneErrorMessages.length

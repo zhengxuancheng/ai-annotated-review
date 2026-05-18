@@ -766,6 +766,7 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
   const shouldKeepListeningRef = useRef(false);
   const stoppingByUserRef = useRef(false);
   const latestInterimTranscriptRef = useRef("");
+  const phraseHintsDisabledRef = useRef(false);
   const onTranscriptRef = useRef(onTranscript);
   const [listening, setListening] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -813,16 +814,31 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
       return;
     }
 
-    const next = new Recognition();
-    recognitionRef.current = next;
     shouldKeepListeningRef.current = true;
     stoppingByUserRef.current = false;
+    phraseHintsDisabledRef.current = false;
     latestInterimTranscriptRef.current = "";
+    startRecognition(Recognition, { resetInterim: false });
+  }
+
+  return { supported, listening, message, toggle };
+
+  function startRecognition(
+    Recognition: SpeechRecognitionConstructor,
+    options: { resetInterim: boolean }
+  ) {
+    const next = new Recognition();
+    recognitionRef.current = next;
+    if (options.resetInterim) {
+      latestInterimTranscriptRef.current = "";
+    }
     next.lang = navigator.language || "zh-CN";
     next.continuous = true;
     next.interimResults = true;
     next.maxAlternatives = 1;
-    applySpeechPhraseHints(next, buildSpeechPhraseHints(context));
+    if (!phraseHintsDisabledRef.current) {
+      applySpeechPhraseHints(next, buildSpeechPhraseHints(context));
+    }
     next.onresult = (event) => {
       let finalTranscript = "";
       let interimTranscript = "";
@@ -847,6 +863,10 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
         stoppingByUserRef.current = true;
         setListening(false);
         void handleSpeechPermissionBlocked();
+        return;
+      }
+      if (event.error === "phrases-not-supported") {
+        restartWithoutPhraseHints(next, Recognition);
         return;
       }
       if (event.error === "no-speech") {
@@ -896,8 +916,6 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
     }
   }
 
-  return { supported, listening, message, toggle };
-
   async function handleSpeechPermissionBlocked() {
     const extensionPermission = await requestBrowserExtensionMicrophonePermission();
     if (extensionPermission === "opened") {
@@ -907,6 +925,28 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
       return;
     }
     setMessage("Microphone permission was blocked.");
+  }
+
+  function restartWithoutPhraseHints(
+    failedRecognition: InstanceType<SpeechRecognitionConstructor>,
+    Recognition: SpeechRecognitionConstructor
+  ) {
+    if (phraseHintsDisabledRef.current || recognitionRef.current !== failedRecognition) {
+      return;
+    }
+    phraseHintsDisabledRef.current = true;
+    recognitionRef.current = null;
+    try {
+      failedRecognition.abort();
+    } catch {
+      // Ignore abort failures while falling back to recognition without phrase hints.
+    }
+    window.setTimeout(() => {
+      if (!shouldKeepListeningRef.current || stoppingByUserRef.current) {
+        return;
+      }
+      startRecognition(Recognition, { resetInterim: false });
+    }, 0);
   }
 
   function commitLatestInterimTranscript() {
