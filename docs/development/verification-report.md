@@ -40,7 +40,7 @@ Results:
 - `npm run build`: passed, including Cloudflare Worker dry-run bundling.
 - `npm run verify`: passed after the non-directory pivot. It now runs unit tests, typecheck, build, functional claim verification, adapter verification, MCP smoke, UI smoke, worker verification, license scan, reality checks, deployment config checks, and local submission-readiness checks.
 - `npm run verify:functionality`: passed. It proves parse -> stable blocks -> annotate -> export/import -> confirmed-only revision pack -> MCP/tool/UI smoke.
-- `npm run verify:adapters`: passed. It proves the Chrome extension builds to Manifest V3 with exact ChatGPT/Claude host permissions and that the CLI can create, list blocks, annotate, and build a revision pack.
+- `npm run verify:adapters`: passed. It proves the Chrome extension builds to Manifest V3 with exact ChatGPT/Claude/OpenAI-transcription host permissions and that the CLI can create, list blocks, annotate, and build a revision pack.
 - `npm run verify:deployment-config`: passed.
 - `npm run verify:worker`: passed.
 - `npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker`: passed; Wrangler dry-run reported total upload size and exited normally.
@@ -159,7 +159,7 @@ Verified by `npm run verify:adapters`:
 - Manifest version is 3.
 - Side panel default path is `index.html`.
 - Permissions are limited to `activeTab`, `scripting`, and `sidePanel`.
-- Host permissions are limited to `https://chatgpt.com/*`, `https://chat.openai.com/*`, and `https://claude.ai/*`.
+- Host permissions are limited to `https://chatgpt.com/*`, `https://chat.openai.com/*`, `https://claude.ai/*`, and `https://api.openai.com/*`.
 - No `<all_urls>` or `*://` broad host access is requested.
 - Source guard verifies selected-text import via `window.getSelection()?.toString()`.
 - Source guard rejects whole-page text scraping patterns such as `document.body.innerText`.
@@ -167,6 +167,33 @@ Verified by `npm run verify:adapters`:
 - CLI smoke listed real block IDs.
 - CLI smoke added a confirmed annotation to a target block.
 - CLI smoke generated a revision pack containing the confirmed annotation.
+
+## Voice Input Reliability Update
+
+Verified on 2026-05-18 after manual testing showed browser `Dictate` still produced unstable Chinese
+recognition:
+
+- Web Speech remains a free basic mode, but it is no longer treated as the reliable voice path.
+- `AI dictation` records with `getUserMedia`/`MediaRecorder` until the user clicks
+  `Stop & transcribe`.
+- The transcription request includes the current review block and extracted terms as OpenAI
+  transcription prompt context.
+- The request uses the user's own OpenAI API key from browser local storage and does not send audio
+  to the project server.
+- The browser extension manifest now includes the exact `https://api.openai.com/*` host permission
+  for this user-triggered direct transcription request.
+- The revision-pack builder now tells ChatGPT to correct obvious speech-recognition mistakes in
+  dictated comments using the anchor quote and section context, without inventing requirements.
+- `npm run verify`: passed after the high-accuracy voice update.
+- `npm audit --audit-level=moderate`: passed with 0 vulnerabilities after the high-accuracy voice
+  update.
+- Cloudflare Worker deploy succeeded with version `f003a280-b942-4ae3-9890-0a357d4170ea`.
+- Remote MCP smoke passed against
+  `https://ai-annotated-review.liujinxingde2008.workers.dev/mcp`; widget HTML size was 421,733
+  chars.
+- Rendered UI check passed in the browser: inline composer shows `Dictate`, `AI dictation`, and
+  `Voice settings`; the settings panel shows API key, microphone selection, and the OpenAI audio
+  disclosure; no console errors were reported.
 
 ## ChatGPT Developer Mode Evidence
 

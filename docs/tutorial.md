@@ -46,7 +46,7 @@ Review workflow:
 2. Paste a long AI-generated Markdown/text report.
 3. Click `Create review session`.
 4. Click a block's comment button.
-5. Type the comment directly below that block, or use `Dictate` when available.
+5. Type the comment directly below that block, use `Dictate` for basic browser speech, or use `AI dictation` after adding your own OpenAI API key in `Voice settings`.
 6. Click `Add comment`.
 7. Create at least three annotations.
 8. Keep revision-driving comments confirmed, or change status later in the annotations panel.
@@ -77,7 +77,7 @@ Load it in Chrome:
 8. Click `Use selected text`.
 9. Review the imported text, then click `Create review session`.
 10. Click the comment button on any review block.
-11. Type the comment directly under that block, or use `Dictate` when Chrome offers voice recognition. Dictation keeps listening until you click `Stop`, and the app does lightweight cleanup for reviewed-block terms and basic Chinese punctuation.
+11. Type the comment directly under that block, use `Dictate` when Chrome offers browser voice recognition, or use `AI dictation` after adding your own OpenAI API key in `Voice settings`.
 12. Click `Add comment`.
 
 The side panel imports only the text currently selected by the user in the active ChatGPT or Claude tab. It does not scrape the whole conversation.
@@ -87,6 +87,8 @@ The primary review flow asks only for the comment. The app generates a short tit
 If `Dictate` needs microphone permission, the extension opens an `Enable microphone dictation` tab. Allow microphone access there, return to the side panel, and click `Dictate` again.
 
 `Dictate` uses Chrome's browser speech recognition. If macOS or Chrome routes Chrome's microphone input to an iPhone Continuity microphone, the extension cannot force it back to the Mac microphone from Web Speech code. Change the input source in macOS or Chrome settings, then click `Dictate` again.
+
+`AI dictation` records audio until you click `Stop & transcribe`, then sends that audio directly to OpenAI's transcription endpoint with the current review-block context. This mode is optional, requires your own OpenAI API key, and stores the key only in this browser's local storage. Use the `Microphone` selector in `Voice settings` when Chrome exposes more than one input device.
 
 Speech cleanup is intentionally conservative. It can correct obvious reviewed-block terms such as `face0a` -> `Phase 0A` when the selected block contains `Phase 0A`, but you should still read the comment before clicking `Add comment`.
 
@@ -193,7 +195,7 @@ npm run verify:adapters
 `verify:adapters` checks:
 
 - the built Chrome extension manifest,
-- exact ChatGPT/Claude host permissions,
+- exact ChatGPT/Claude/OpenAI-transcription host permissions,
 - no broad `<all_urls>` access,
 - selected-text-only import boundary,
 - CLI create/blocks/annotate/pack behavior.

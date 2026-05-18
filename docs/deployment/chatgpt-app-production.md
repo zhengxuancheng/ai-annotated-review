@@ -37,7 +37,9 @@ REMOTE_PRIVACY_URL=https://your-domain.example/privacy
 SMOKE_REMOTE_REPORT_PATH=docs/submission/remote-smoke-report.json
 ```
 
-Use exact HTTPS origins. Do not use wildcard CSP entries for broad distribution.
+Use exact HTTPS origins. Do not use wildcard CSP entries for broad distribution. The widget adds
+`https://api.openai.com` by default because optional `AI dictation` makes a user-triggered direct
+transcription request when the user provides their own OpenAI API key.
 
 ## First Deployment Recommendation
 

@@ -30,6 +30,11 @@ await mustContain(
   "Privacy model must disclose browser-provided voice recognition."
 );
 await mustContain(
+  "docs/privacy-model.md",
+  "AI dictation",
+  "Privacy model must disclose optional AI dictation."
+);
+await mustContain(
   "docs/development/verification-report.md",
   "Not Yet Verified",
   "Verification report must preserve unverified-live-ChatGPT caveats."
@@ -46,7 +51,9 @@ const productFiles = await collectFiles(
 );
 for (const file of productFiles) {
   const text = await readFile(file, "utf8");
-  mustNotMatchText(file, text, /\blocalStorage\b/, "Do not use localStorage for core state.");
+  if (!isAllowedOpenAiKeyStorage(file, text)) {
+    mustNotMatchText(file, text, /\blocalStorage\b/, "Do not use localStorage for core state.");
+  }
   mustNotMatchText(file, text, /\bsessionStorage\b/, "Do not use sessionStorage for core state.");
 }
 
@@ -89,11 +96,12 @@ const extensionManifest = JSON.parse(await readFile("apps/browser-extension/publ
 const expectedHostPermissions = [
   "https://chatgpt.com/*",
   "https://chat.openai.com/*",
-  "https://claude.ai/*"
+  "https://claude.ai/*",
+  "https://api.openai.com/*"
 ];
 const expectedPermissions = ["activeTab", "scripting", "sidePanel"];
 if (!sameSet(extensionManifest.host_permissions ?? [], expectedHostPermissions)) {
-  failures.push("Browser extension host permissions must stay limited to ChatGPT and Claude web.");
+  failures.push("Browser extension host permissions must stay limited to ChatGPT, Claude, and OpenAI transcription API.");
 }
 if (!sameSet(extensionManifest.permissions ?? [], expectedPermissions)) {
   failures.push("Browser extension permissions must stay limited to activeTab, scripting, and sidePanel.");
@@ -142,6 +150,14 @@ async function mustContain(file, needle, message) {
 
 function mustNotMatchText(file, text, pattern, message) {
   if (pattern.test(text)) failures.push(`${file}: ${message}`);
+}
+
+function isAllowedOpenAiKeyStorage(file, text) {
+  return (
+    text.includes("aiar.openaiApiKey") &&
+    (file.endsWith("apps/chatgpt-app/web/src/highAccuracyTranscription.ts") ||
+      file.endsWith("apps/chatgpt-app/cloudflare-worker/src/generated/widgetHtml.ts"))
+  );
 }
 
 async function collectFiles(dirs, pattern) {

@@ -65,6 +65,8 @@ describe("revision prompt builder", () => {
     expect(pack.prompt).toContain("Make concrete");
     expect(pack.prompt).not.toContain("Open note");
     expect(pack.omittedCounts.open).toBe(1);
+    expect(pack.prompt).toContain("dictated");
+    expect(pack.prompt).toContain("speech-recognition");
   });
 
   it("compresses when the prompt budget is small", () => {

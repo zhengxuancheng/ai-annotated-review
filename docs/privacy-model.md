@@ -2,7 +2,7 @@
 
 ## Current Version
 
-This publication-track build has no accounts, no backend database, no telemetry, no third-party API calls, and no cloud sync.
+This publication-track build has no accounts, no backend database, no telemetry, and no cloud sync. The optional `AI dictation` voice path can make a user-triggered direct browser request to OpenAI's transcription API using the user's own API key.
 
 The current public release path is a web app, Chrome side panel extension, and CLI adapter. The ChatGPT Apps SDK adapter remains a technical preview and future official-submission path.
 
@@ -13,6 +13,8 @@ The public web app accepts text the user explicitly pastes.
 The browser extension accepts only text the user explicitly selects in the active ChatGPT or Claude web tab before clicking `Use selected text`.
 
 If the user clicks `Dictate`, the inline comment composer uses the browser's built-in Web Speech recognition when available. The project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy.
+
+If the user clicks `AI dictation`, enters an OpenAI API key, records audio, and clicks `Stop & transcribe`, the browser sends the recorded audio directly to OpenAI with the current review-block context. The project server does not receive the audio or the API key.
 
 The CLI accepts a file path or stdin chosen by the user.
 
@@ -26,7 +28,7 @@ It does not request:
 - location,
 - credentials,
 - files,
-- API keys.
+- API keys, except for the optional OpenAI key entered by the user for `AI dictation`.
 
 ## Model-Visible Data
 
@@ -75,6 +77,8 @@ In public web app, browser extension, and CLI workflows, the default action is c
 The widget uses ChatGPT widget state when available to preserve local UI state for the current widget instance. The current implementation stores annotation state, selected block, and filter state there. It does not use `localStorage`.
 
 The browser extension and public web app keep the active review session in browser memory until the user exports JSON or Markdown. The CLI writes only the files explicitly named by the user.
+
+The optional OpenAI API key for `AI dictation` is stored in browser local storage when provided and can be cleared from `Voice settings`.
 
 ## Public Release Gap
 

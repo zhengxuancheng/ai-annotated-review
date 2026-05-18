@@ -36,6 +36,7 @@ import {
   Mic,
   Send,
   Square,
+  Settings,
   Upload,
   X
 } from "lucide-react";
@@ -64,6 +65,12 @@ import {
   type DictationContext,
   type SpeechPhraseHint
 } from "./speechPostProcessing.js";
+import {
+  getStoredOpenAiApiKey,
+  selectSupportedAudioMimeType,
+  storeOpenAiApiKey,
+  transcribeAudioWithOpenAI
+} from "./highAccuracyTranscription.js";
 import "./styles.css";
 
 type SendState = "idle" | "sent" | "copied" | "fallback" | "error";
@@ -672,23 +679,56 @@ function InlineAnnotationComposer({
       }),
     [block]
   );
+  const [openAiApiKey, setOpenAiApiKey] = useState(() => getStoredOpenAiApiKey());
+  const [voiceSettingsOpen, setVoiceSettingsOpen] = useState(false);
+  const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState("");
   const draftRef = useRef(value);
   useEffect(() => {
     draftRef.current = value;
   }, [value]);
-  const dictation = useSpeechDictation((transcript) => {
+  const appendDictatedTranscript = (transcript: string) => {
     const nextValue = appendTranscript(
       draftRef.current,
       normalizeDictatedComment(transcript, dictationContext)
     );
     draftRef.current = nextValue;
     onChange(nextValue);
-  }, dictationContext);
+  };
+  const dictation = useSpeechDictation(appendDictatedTranscript, dictationContext);
+  const aiDictation = useOpenAiDictation(
+    appendDictatedTranscript,
+    dictationContext,
+    openAiApiKey,
+    selectedAudioDeviceId
+  );
   const canSubmit = value.trim().length > 0;
 
   function handleDraftChange(nextValue: string) {
     draftRef.current = nextValue;
     onChange(nextValue);
+  }
+
+  async function refreshAudioInputDevices() {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setAudioInputDevices(devices.filter((device) => device.kind === "audioinput"));
+    } catch {
+      setAudioInputDevices([]);
+    }
+  }
+
+  function handleOpenAiApiKeyChange(nextValue: string) {
+    setOpenAiApiKey(nextValue);
+    storeOpenAiApiKey(nextValue);
+  }
+
+  function handleAiDictationToggle() {
+    if (!openAiApiKey.trim()) {
+      setVoiceSettingsOpen(true);
+    }
+    void aiDictation.toggle();
   }
 
   return (
@@ -718,6 +758,38 @@ function InlineAnnotationComposer({
           {dictation.listening ? <Square size={15} /> : <Mic size={15} />}
           {dictation.listening ? "Stop" : "Dictate"}
         </button>
+        <button
+          className={`secondary-button voice-button ${aiDictation.recording ? "listening" : ""}`}
+          type="button"
+          disabled={!aiDictation.supported || aiDictation.transcribing}
+          onClick={handleAiDictationToggle}
+          title={
+            aiDictation.supported
+              ? "High accuracy AI dictation"
+              : "AI dictation is not available in this browser"
+          }
+        >
+          {aiDictation.recording ? <Square size={15} /> : <Mic size={15} />}
+          {aiDictation.recording
+            ? "Stop & transcribe"
+            : aiDictation.transcribing
+              ? "Transcribing..."
+              : "AI dictation"}
+        </button>
+        <button
+          className="secondary-button compact-button"
+          type="button"
+          onClick={() => {
+            const next = !voiceSettingsOpen;
+            setVoiceSettingsOpen(next);
+            if (next) {
+              void refreshAudioInputDevices();
+            }
+          }}
+        >
+          <Settings size={15} />
+          Voice settings
+        </button>
         <div className="inline-composer-spacer" />
         <button className="secondary-button" type="button" onClick={onCancel}>
           Cancel
@@ -727,7 +799,51 @@ function InlineAnnotationComposer({
           Add comment
         </button>
       </div>
+      {voiceSettingsOpen ? (
+        <div className="voice-settings-panel">
+          <label>
+            OpenAI API key
+            <input
+              type="password"
+              value={openAiApiKey}
+              autoComplete="off"
+              onChange={(event) => handleOpenAiApiKeyChange(event.target.value)}
+            />
+          </label>
+          <label>
+            Microphone
+            <select
+              value={selectedAudioDeviceId}
+              onChange={(event) => setSelectedAudioDeviceId(event.target.value)}
+              onFocus={() => void refreshAudioInputDevices()}
+            >
+              <option value="">System default</option>
+              {audioInputDevices.map((device, index) => (
+                <option key={device.deviceId || index} value={device.deviceId}>
+                  {device.label || `Microphone ${index + 1}`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="voice-settings-actions">
+            <button className="secondary-button" type="button" onClick={() => void refreshAudioInputDevices()}>
+              Refresh microphones
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => handleOpenAiApiKeyChange("")}
+            >
+              Forget key
+            </button>
+          </div>
+          <p className="muted">
+            AI dictation sends recorded audio directly to OpenAI after you click Stop & transcribe.
+          </p>
+        </div>
+      ) : null}
       {dictation.message ? <p className="status-note">{dictation.message}</p> : null}
+      {aiDictation.message ? <p className="status-note">{aiDictation.message}</p> : null}
     </div>
   );
 }
@@ -954,6 +1070,143 @@ function useSpeechDictation(onTranscript: (transcript: string) => void, context:
     if (!transcript) return;
     latestInterimTranscriptRef.current = "";
     onTranscriptRef.current(transcript);
+  }
+}
+
+function useOpenAiDictation(
+  onTranscript: (transcript: string) => void,
+  context: DictationContext,
+  apiKey: string,
+  audioDeviceId: string
+): {
+  supported: boolean;
+  recording: boolean;
+  transcribing: boolean;
+  message: string | null;
+  toggle: () => Promise<void>;
+} {
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const onTranscriptRef = useRef(onTranscript);
+  const contextRef = useRef(context);
+  const apiKeyRef = useRef(apiKey);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const supported =
+    typeof navigator !== "undefined" &&
+    Boolean(navigator.mediaDevices?.getUserMedia) &&
+    typeof MediaRecorder !== "undefined" &&
+    typeof FormData !== "undefined" &&
+    typeof fetch !== "undefined";
+
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+  }, [onTranscript]);
+
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+
+  useEffect(() => {
+    apiKeyRef.current = apiKey;
+  }, [apiKey]);
+
+  useEffect(() => {
+    return () => {
+      stopMediaTracks();
+      const recorder = recorderRef.current;
+      if (recorder?.state === "recording") {
+        recorder.stop();
+      }
+    };
+  }, []);
+
+  async function toggle() {
+    if (recording) {
+      stopRecording();
+      return;
+    }
+    await startRecording();
+  }
+
+  return { supported, recording, transcribing, message, toggle };
+
+  async function startRecording() {
+    if (!supported) {
+      setMessage("AI dictation is not available in this browser.");
+      return;
+    }
+    if (!apiKeyRef.current.trim()) {
+      setMessage("Add an OpenAI API key in Voice settings before using AI dictation.");
+      return;
+    }
+    try {
+      chunksRef.current = [];
+      const constraints: MediaStreamConstraints = {
+        audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      const mimeType = selectSupportedAudioMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+      recorder.onstop = () => {
+        void finishTranscription();
+      };
+      recorder.start();
+      setRecording(true);
+      setMessage("Recording. Click Stop & transcribe when finished.");
+    } catch {
+      stopMediaTracks();
+      setRecording(false);
+      setMessage("AI dictation could not access the microphone.");
+    }
+  }
+
+  function stopRecording() {
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+    setRecording(false);
+    setTranscribing(true);
+    setMessage("Transcribing with OpenAI...");
+    recorder.stop();
+  }
+
+  async function finishTranscription() {
+    stopMediaTracks();
+    const audioBlob = new Blob(chunksRef.current, {
+      type: chunksRef.current[0]?.type || "audio/webm"
+    });
+    chunksRef.current = [];
+    try {
+      const transcript = await transcribeAudioWithOpenAI({
+        apiKey: apiKeyRef.current,
+        audioBlob,
+        context: contextRef.current
+      });
+      onTranscriptRef.current(transcript);
+      setMessage("AI dictation added. Review before adding comment.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "AI dictation failed.");
+    } finally {
+      recorderRef.current = null;
+      setTranscribing(false);
+      setRecording(false);
+    }
+  }
+
+  function stopMediaTracks() {
+    for (const track of streamRef.current?.getTracks() ?? []) {
+      track.stop();
+    }
+    streamRef.current = null;
   }
 }
 

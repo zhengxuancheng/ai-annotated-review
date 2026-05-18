@@ -147,6 +147,7 @@ function buildDetailedPrompt(
     "- Do not apply open, resolved, or rejected comments unless they are listed here.",
     "- Preserve unaffected sections and the original document structure where possible.",
     "- If an instruction conflicts with the source text, prioritize the reviewer instruction and keep the change local to the referenced block or section.",
+    "- Some reviewer comments may be dictated; correct obvious speech-recognition mistakes using the anchor quote and section context, but do not invent requirements.",
     selfContained
       ? "- Source excerpts are included only as local anchors, not as a complete copy of the document."
       : "- Refer to the original report already present in this conversation; do not require the user to paste it again.",
@@ -191,7 +192,7 @@ function buildCompactPromptWithinBudget(
     "Revise the original document using confirmed annotations only.",
     `Document: ${title}`,
     `Review session: ${session.id}`,
-    "Rules: preserve unaffected sections; keep edits local to referenced blocks.",
+    "Rules: preserve unaffected sections; keep edits local to referenced blocks; correct obvious speech-recognition mistakes in dictated comments using context.",
     selfContained
       ? "Quotes are anchors, not a full document copy."
       : "Use the original report already in this conversation.",

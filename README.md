@@ -82,11 +82,11 @@ The extension requests only:
 - `activeTab`
 - `scripting`
 - `sidePanel`
-- host permissions for `chatgpt.com`, `chat.openai.com`, and `claude.ai`
+- host permissions for `chatgpt.com`, `chat.openai.com`, `claude.ai`, and `api.openai.com`
 
 It imports only the text the user has selected in the active tab. It does not scrape the whole page.
 
-Per-block comments are added inline: click a block's comment button, type the comment, and add it. Title, priority, and confirmed status are generated locally so the main review flow does not ask the reviewer to fill metadata fields. Where Chrome exposes Web Speech recognition, the inline composer also offers a `Dictate` button for browser-provided voice input.
+Per-block comments are added inline: click a block's comment button, type the comment, and add it. Title, priority, and confirmed status are generated locally so the main review flow does not ask the reviewer to fill metadata fields. Where Chrome exposes Web Speech recognition, the inline composer also offers a `Dictate` button for browser-provided voice input. Optional `AI dictation` uses the user's own OpenAI API key and sends recorded audio directly to OpenAI only after the user clicks `Stop & transcribe`.
 
 ## CLI
 

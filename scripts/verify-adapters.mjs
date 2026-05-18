@@ -27,7 +27,8 @@ async function verifyBrowserExtension() {
   const expectedHostPermissions = [
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
-    "https://claude.ai/*"
+    "https://claude.ai/*",
+    "https://api.openai.com/*"
   ];
   const expectedPermissions = ["activeTab", "scripting", "sidePanel"];
 

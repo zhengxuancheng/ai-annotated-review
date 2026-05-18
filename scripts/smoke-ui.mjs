@@ -426,6 +426,105 @@ try {
     "Phrase-hint fallback must not leave the user at Voice input stopped."
   );
 
+  const aiDictationPage = await browser.newPage({ viewport: { width: 390, height: 860 } });
+  await aiDictationPage.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        async getUserMedia() {
+          return {
+            getTracks() {
+              return [{ stop() {} }];
+            }
+          };
+        },
+        async enumerateDevices() {
+          return [
+            {
+              kind: "audioinput",
+              deviceId: "macbook-mic",
+              label: "MacBook Microphone"
+            }
+          ];
+        }
+      }
+    });
+    class FakeMediaRecorder {
+      static isTypeSupported() {
+        return true;
+      }
+      state = "inactive";
+      ondataavailable = null;
+      onstop = null;
+      constructor() {
+        window.__mediaRecorderInstance = this;
+      }
+      start() {
+        this.state = "recording";
+      }
+      stop() {
+        this.state = "inactive";
+        this.ondataavailable?.({ data: new Blob(["fake audio"], { type: "audio/webm" }) });
+        this.onstop?.();
+      }
+    }
+    Object.defineProperty(window, "MediaRecorder", {
+      configurable: true,
+      value: FakeMediaRecorder
+    });
+    window.fetch = async (url, init) => {
+      const formEntries = {};
+      for (const [key, value] of init.body.entries()) {
+        formEntries[key] = value instanceof Blob ? { size: value.size, type: value.type } : value;
+      }
+      window.__openAiTranscriptionRequest = {
+        url,
+        method: init.method,
+        authorization: init.headers.Authorization,
+        formEntries
+      };
+      return new Response(JSON.stringify({ text: "请把 Phase 0A 拆成可执行步骤。" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    };
+  });
+  await aiDictationPage.goto(URL, { waitUntil: "networkidle" });
+  await aiDictationPage.getByText("AI Annotated Review Demo Report").first().waitFor();
+  const aiDictationBlock = aiDictationPage.locator(".review-block").nth(4);
+  await aiDictationBlock.locator(".add-block-button").click();
+  const aiDictationComposer = aiDictationBlock.locator(".inline-composer");
+  await aiDictationComposer.waitFor();
+  await aiDictationComposer.getByRole("button", { name: /Voice settings/ }).click();
+  await aiDictationComposer.getByLabel("OpenAI API key").fill("sk-test");
+  await aiDictationComposer.getByRole("button", { name: /AI dictation/ }).click();
+  await aiDictationComposer.getByRole("button", { name: /Stop & transcribe/ }).waitFor();
+  await aiDictationComposer.getByRole("button", { name: /Stop & transcribe/ }).click();
+  await aiDictationComposer.locator("textarea").waitFor({ state: "visible" });
+  await aiDictationPage.waitForFunction(() => {
+    const textarea = document.querySelector(".inline-composer textarea");
+    return textarea?.value.includes("Phase 0A");
+  });
+  const aiDictationRequest = await aiDictationPage.evaluate(() => window.__openAiTranscriptionRequest);
+  const aiDictationText = await aiDictationComposer
+    .locator("label")
+    .filter({ hasText: "Comment" })
+    .locator("textarea")
+    .inputValue();
+  assert(aiDictationText === "请把 Phase 0A 拆成可执行步骤。", "AI dictation transcript was not added.");
+  assert(
+    aiDictationRequest?.url === "https://api.openai.com/v1/audio/transcriptions",
+    `AI dictation must call OpenAI transcription endpoint, got ${aiDictationRequest?.url}`
+  );
+  assert(
+    aiDictationRequest?.authorization === "Bearer sk-test",
+    "AI dictation must use the user-supplied API key."
+  );
+  assert(
+    aiDictationRequest?.formEntries?.prompt?.includes("ChatGPT Apps SDK"),
+    "AI dictation must send review-block context in the transcription prompt."
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -445,6 +544,7 @@ try {
         voiceDictationStopsOnlyByUser: true,
         voicePhraseHintsUseBlockContext: true,
         voicePhraseHintFailureFallsBack: true,
+        aiDictationSendsAudioWithContext: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
         consoleErrors: errorMessages.length + standaloneErrorMessages.length

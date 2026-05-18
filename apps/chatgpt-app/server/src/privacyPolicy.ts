@@ -9,27 +9,27 @@ const privacySections = [
   {
     heading: "Information processed",
     body:
-      "The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool. The app also processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user. If the user clicks the browser voice-dictation button, the inline comment composer uses browser-provided Web Speech recognition when available. This project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy."
+      "The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool. The app also processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user. If the user clicks the browser voice-dictation button, the inline comment composer uses browser-provided Web Speech recognition when available. This project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy. If the user separately chooses AI dictation, enters their own OpenAI API key, records audio, and clicks Stop & transcribe, the browser sends that recorded audio directly to OpenAI's audio transcription endpoint with the current review-block context. The project server does not receive or store that audio. The API key is stored only in the user's browser local storage until the user clears it."
   },
   {
     heading: "Information not requested",
     body:
-      "The app does not ask for credentials, payment information, government identifiers, precise location, full conversation history, raw chat transcripts, API keys, or account passwords."
+      "The app does not ask for payment information, government identifiers, precise location, full conversation history, raw chat transcripts, or account passwords. The optional AI dictation mode asks for an OpenAI API key only when the user chooses that mode."
   },
   {
     heading: "How information is used",
     body:
-      "Document text is parsed into review blocks so the widget can render an annotation surface. Confirmed annotations are used to build a revision request only after the user confirms that action."
+      "Document text is parsed into review blocks so the widget can render an annotation surface. Confirmed annotations are used to build a revision request only after the user confirms that action. Optional AI dictation uses the active block context only to improve transcription accuracy and punctuation."
   },
   {
     heading: "Recipients",
     body:
-      "The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. The hosted web and MCP preview are served from Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service."
+      "The app sends, copies, or exports a revision request only after the user explicitly confirms or chooses that action. Optional AI dictation sends recorded audio directly from the browser to OpenAI only after the user clicks Stop & transcribe. The hosted web and MCP preview are served from Cloudflare Workers, so Cloudflare may process standard operational request data needed to serve, secure, and debug the service."
   },
   {
     heading: "Storage",
     body:
-      "The current app does not store review sessions in an application database. Public web and extension sessions live in browser memory until the user exports them. CLI sessions are written only to files selected by the user. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. Hosting providers may generate standard operational logs for security and reliability."
+      "The current app does not store review sessions in an application database. Public web and extension sessions live in browser memory until the user exports them. CLI sessions are written only to files selected by the user. Widget state may be kept by the ChatGPT Apps runtime for the active widget experience. If the user saves an API key for optional AI dictation, it is stored in browser local storage and can be cleared from Voice settings. Hosting providers may generate standard operational logs for security and reliability."
   },
   {
     heading: "Retention",

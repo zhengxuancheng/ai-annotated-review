@@ -151,7 +151,8 @@ This path is not claimed as an approved public ChatGPT App Directory app.
 - `APP_PUBLIC_BASE_URL`: public deployment origin used for health/reporting.
 - `APP_WIDGET_DOMAIN`: production widget domain surfaced as `_meta.ui.domain`.
 - `APP_PRIVACY_POLICY_URL`: reviewed privacy policy URL surfaced in `/health`.
-- `APP_CSP_CONNECT_DOMAINS`: comma-separated exact domains for widget network calls.
+- `APP_CSP_CONNECT_DOMAINS`: comma-separated exact domains for widget network calls. The widget
+  includes `https://api.openai.com` by default for optional user-triggered `AI dictation`.
 - `APP_CSP_RESOURCE_DOMAINS`: comma-separated exact domains for widget resources.
 - `APP_CSP_FRAME_DOMAINS`: optional exact frame domains; avoid unless the UI truly embeds subframes.
 

@@ -16,6 +16,7 @@ import { z } from "zod";
 export const SERVER_VERSION = "0.1.0";
 export const MCP_PATH = "/mcp";
 export const REVIEW_WIDGET_URI = "ui://ai-annotated-review/review-widget-v2.html";
+const DEFAULT_WIDGET_CONNECT_DOMAINS = ["https://api.openai.com"];
 
 export type AiAnnotatedReviewServerOptions = {
   loadWidgetHtml: () => string;
@@ -206,7 +207,10 @@ function buildWidgetUiMeta(options: AiAnnotatedReviewServerOptions) {
     resourceDomains: string[];
     frameDomains?: string[];
   } = {
-    connectDomains: options.cspConnectDomains ?? [],
+    connectDomains: uniqueDomains([
+      ...DEFAULT_WIDGET_CONNECT_DOMAINS,
+      ...(options.cspConnectDomains ?? [])
+    ]),
     resourceDomains: options.cspResourceDomains ?? []
   };
 
@@ -220,4 +224,8 @@ function buildWidgetUiMeta(options: AiAnnotatedReviewServerOptions) {
     csp,
     ...(options.widgetDomain ? { domain: options.widgetDomain } : {})
   };
+}
+
+function uniqueDomains(domains: string[]): string[] {
+  return [...new Set(domains)];
 }
