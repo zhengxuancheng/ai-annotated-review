@@ -1,10 +1,22 @@
 {
   "manifest_version": 3,
   "name": "AI Annotated Review Companion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Review long AI outputs from ChatGPT and Claude in a browser side panel.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "action": {
-    "default_title": "Open AI Annotated Review"
+    "default_title": "Open AI Annotated Review",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
   },
   "background": {
     "service_worker": "service-worker.js",

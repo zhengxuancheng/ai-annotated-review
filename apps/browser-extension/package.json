@@ -1,11 +1,11 @@
 {
   "name": "@ai-annotated-review/browser-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build": "vite build && node scripts/copy-manifest.mjs"
+    "build": "node ../../scripts/generate-extension-icons.mjs && vite build && node scripts/copy-manifest.mjs"
   },
   "dependencies": {
     "@ai-annotated-review/annotation-model": "0.1.0",

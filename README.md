@@ -8,8 +8,8 @@ Public source repository: https://github.com/zhengxuancheng/ai-annotated-review
 
 Current release path:
 
-- Public web app at `/app` on the deployed server.
-- Chrome side panel extension for ChatGPT web and Claude web.
+- Chrome side panel extension for ChatGPT web and Claude web as the primary product surface.
+- Public web app at `/app` on the deployed server as a demo and fallback review surface.
 - CLI adapter for Codex CLI, Claude Code, and other terminal workflows.
 - ChatGPT Apps SDK adapter retained as a technical preview for Developer Mode and possible future official submission.
 
@@ -65,10 +65,24 @@ Production Worker routes:
 
 ## Browser Extension
 
-Build the Chrome side panel extension:
+The browser extension is the main v1 user experience. It keeps the review surface next to ChatGPT or Claude without modifying either product's native message UI.
+
+Download the latest release zip:
+
+```text
+https://github.com/zhengxuancheng/ai-annotated-review/releases/latest
+```
+
+Or build the Chrome side panel extension locally:
 
 ```bash
 npm run build -w @ai-annotated-review/browser-extension
+```
+
+Create a zip suitable for GitHub Release or Chrome Web Store upload:
+
+```bash
+npm run package:extension
 ```
 
 Load this folder in Chrome's extension page:
@@ -129,6 +143,7 @@ The official ChatGPT App Directory path is paused because publisher verification
 - [Security policy](SECURITY.md)
 - [Support](SUPPORT.md)
 - [Usage tutorial](docs/tutorial.md)
+- [Chrome Web Store submission packet](docs/release/chrome-web-store-submission.md)
 - [Architecture](docs/architecture.md)
 - [Privacy model](docs/privacy-model.md)
 - [Non-directory release plan](docs/strategy/non-directory-release-plan.md)
@@ -139,6 +154,8 @@ The official ChatGPT App Directory path is paused because publisher verification
 
 ## Publication Status
 
-The source repository is public. The current practical release target is the public web app plus Chrome side panel extension plus CLI adapter.
+The source repository is public. The current practical release target is the Chrome side panel extension, supported by the public web demo/fallback and CLI adapter.
 
 The ChatGPT Apps SDK adapter has not been submitted to or approved by OpenAI for App Directory distribution.
+
+The Chrome Web Store listing has not been submitted or approved yet.

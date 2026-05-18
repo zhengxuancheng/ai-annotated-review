@@ -8,6 +8,7 @@ dist/
 dist-types/
 build/
 coverage/
+release-artifacts/
 .turbo/
 .vite/
 .wrangler/

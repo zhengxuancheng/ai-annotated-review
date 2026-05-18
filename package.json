@@ -1,6 +1,6 @@
 {
   "name": "ai-annotated-review",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -23,6 +23,7 @@
     "build:app": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && npm run build:worker-widget && npm run build -w @ai-annotated-review/chatgpt-app-cloudflare-worker",
     "build:adapters": "npm run build -w @ai-annotated-review/browser-extension && npm run build -w @ai-annotated-review/cli",
     "build:worker-widget": "npm run build -w @ai-annotated-review/chatgpt-app-web && npm run build -w @ai-annotated-review/chatgpt-app-server && node scripts/generate-worker-widget.mjs",
+    "package:extension": "npm run build -w @ai-annotated-review/browser-extension && node scripts/package-browser-extension.mjs",
     "dev": "npm run dev -w @ai-annotated-review/chatgpt-app-server",
     "preview:web": "npm run dev -w @ai-annotated-review/chatgpt-app-web",
     "start": "npm run start -w @ai-annotated-review/chatgpt-app-server",
