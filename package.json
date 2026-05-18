@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
-  "description": "Open-source workflow for anchored review of long AI-generated documents.",
+  "description": "Bilingual workflow for block-level review of long AI-generated documents. / 中英双语长文 AI 输出批注式审阅工具。",
   "repository": {
     "type": "git",
     "url": "https://github.com/zhengxuancheng/ai-annotated-review.git"
