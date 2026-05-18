@@ -12,6 +12,8 @@ The public web app accepts text the user explicitly pastes.
 
 The browser extension accepts only text the user explicitly selects in the active ChatGPT or Claude web tab before clicking `Use selected text`.
 
+If the user clicks `Dictate`, the inline comment composer uses the browser's built-in Web Speech recognition when available. The project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy.
+
 The CLI accepts a file path or stdin chosen by the user.
 
 The MCP tool accepts only the document the user or model explicitly passes as `markdown`, plus optional `title` and `sourceLabel`.

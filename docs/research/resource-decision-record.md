@@ -21,6 +21,8 @@ This record exists so implementation does not drift into random dependency adopt
 - Chrome Side Panel API: `https://developer.chrome.com/docs/extensions/reference/api/sidePanel`
 - Chrome Scripting API: `https://developer.chrome.com/docs/extensions/reference/api/scripting`
 - Chrome extension activeTab permission: `https://developer.chrome.com/docs/extensions/develop/concepts/activeTab`
+- MDN Web Speech API: `https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API`
+- MDN `SpeechRecognition`: `https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition`
 
 Key implementation consequences:
 
@@ -32,6 +34,7 @@ Key implementation consequences:
 - Public Apps SDK submission requires HTTPS hosting, CSP, test cases, privacy policy, and verified publisher setup. The repo now has a stable HTTPS MCP endpoint, CSP metadata, test cases, production desktop screenshot evidence, a privacy policy URL, support via GitHub issues, and strict submission checks; OpenAI account-side gates remain.
 - Cloudflare Workers is suitable as a stable HTTPS MCP host for this stateless app because Cloudflare documents `createMcpHandler` for stateless MCP servers without Durable Objects and shows ChatGPT Apps deployed to `workers.dev`.
 - Chrome's official Side Panel and Scripting APIs are sufficient for the first browser extension. A framework can be added later only if lifecycle complexity justifies it.
+- Browser voice input should use feature-detected Web Speech `SpeechRecognition` only. MDN marks `SpeechRecognition` as limited availability and notes that Chrome may use a server-based recognition engine, so the UI must degrade gracefully and privacy docs must disclose that browser-vendor processing may occur.
 
 ## Accepted Dependencies
 

@@ -48,16 +48,10 @@ try {
   await page.getByText("AI Annotated Review Demo Report").first().waitFor();
 
   await addAnnotation(page, 2, {
-    title: "Clarify target user",
-    body: "Name who owns this workflow and what review pain they feel.",
-    priority: "P1",
-    status: "confirmed"
+    body: "Name who owns this workflow and what review pain they feel."
   });
   await addAnnotation(page, 4, {
-    title: "Keep platform boundary honest",
-    body: "Say this is an embedded app widget, not native ChatGPT bubble editing.",
-    priority: "P0",
-    status: "confirmed"
+    body: "Say this is an embedded app widget, not native ChatGPT bubble editing."
   });
   await page.getByRole("button", { name: /Build pack/ }).click();
 
@@ -70,12 +64,12 @@ try {
 }
 
 async function addAnnotation(page, blockIndex, annotation) {
-  await page.locator(".review-block").nth(blockIndex).click();
-  await page.locator("label").filter({ hasText: "Title" }).locator("input").fill(annotation.title);
-  await page.locator("label").filter({ hasText: "Comment" }).locator("textarea").fill(annotation.body);
-  await page.locator("label").filter({ hasText: "Priority" }).locator("select").selectOption(annotation.priority);
-  await page.locator("label").filter({ hasText: "Status" }).locator("select").selectOption(annotation.status);
-  await page.getByRole("button", { name: /Add annotation/ }).click();
+  const targetBlock = page.locator(".review-block").nth(blockIndex);
+  await targetBlock.locator(".add-block-button").click();
+  const composer = targetBlock.locator(".inline-composer");
+  await composer.waitFor();
+  await composer.locator("label").filter({ hasText: "Comment" }).locator("textarea").fill(annotation.body);
+  await composer.getByRole("button", { name: /Add comment/ }).click();
 }
 
 async function waitForHttp(url) {

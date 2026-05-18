@@ -9,7 +9,7 @@ const privacySections = [
   {
     heading: "Information processed",
     body:
-      "The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool. The app also processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user."
+      "The app processes Markdown or plain text that the user explicitly pastes, selects in ChatGPT or Claude web, provides through the CLI, or asks ChatGPT Developer Mode to open through the MCP tool. The app also processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user. If the user clicks the browser voice-dictation button, the inline comment composer uses browser-provided Web Speech recognition when available. This project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy."
   },
   {
     heading: "Information not requested",

@@ -45,12 +45,11 @@ Review workflow:
 1. Click `New document`.
 2. Paste a long AI-generated Markdown/text report.
 3. Click `Create review session`.
-4. Click a document block.
-5. Enter annotation title and comment.
-6. Choose priority and status.
-7. Click `Add annotation`.
+4. Click a block's comment button.
+5. Type the comment directly below that block, or use `Dictate` when available.
+6. Click `Add comment`.
 8. Create at least three annotations.
-9. Mark the revision-driving comments as `confirmed`.
+9. Keep revision-driving comments confirmed, or change status later in the annotations panel.
 10. Click `Build pack`.
 11. Review the generated prompt.
 12. Click `Copy revision request` or `Export pack`.
@@ -77,8 +76,13 @@ Load it in Chrome:
 7. Click the extension icon to open the side panel.
 8. Click `Use selected text`.
 9. Review the imported text, then click `Create review session`.
+10. Click the comment button on any review block.
+11. Type the comment directly under that block, or use `Dictate` when Chrome offers voice recognition.
+12. Click `Add comment`.
 
 The side panel imports only the text currently selected by the user in the active ChatGPT or Claude tab. It does not scrape the whole conversation.
+
+The primary review flow asks only for the comment. The app generates a short title, priority, and confirmed status locally; the annotation list still allows later status or priority edits when needed.
 
 After building the revision pack, copy or export it and paste it back into ChatGPT or Claude manually.
 

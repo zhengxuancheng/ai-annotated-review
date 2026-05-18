@@ -33,7 +33,9 @@ import {
   Flag,
   Maximize2,
   MessageSquarePlus,
+  Mic,
   Send,
+  Square,
   Upload,
   X
 } from "lucide-react";
@@ -53,25 +55,11 @@ import { createSampleSession } from "./sampleSession.js";
 import { isBrowserExtensionHost, readActiveTabSelection } from "./hostIntegrations.js";
 import "./styles.css";
 
-type Draft = {
-  title: string;
-  body: string;
-  priority: AnnotationPriority;
-  status: AnnotationStatus;
-};
-
 type SendState = "idle" | "sent" | "copied" | "fallback" | "error";
 type ImportDraft = {
   title: string;
   sourceLabel: string;
   markdown: string;
-};
-
-const EMPTY_DRAFT: Draft = {
-  title: "",
-  body: "",
-  priority: "P2",
-  status: "open"
 };
 
 const EMPTY_IMPORT_DRAFT: ImportDraft = {
@@ -90,10 +78,11 @@ function App() {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
     restoreSelectedBlockId(restored, initialWidgetState)
   );
+  const [activeComposerBlockId, setActiveComposerBlockId] = useState<string | null>(null);
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<AnnotationStatus | "all">(
     restoreStatusFilter(initialWidgetState)
   );
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [revisionPack, setRevisionPack] = useState<RevisionPack | null>(null);
   const [confirmingSend, setConfirmingSend] = useState(false);
   const [sendState, setSendState] = useState<SendState>("idle");
@@ -113,6 +102,8 @@ function App() {
       activeHostSessionId.current = nextSession.id;
       setSession(nextSession);
       setSelectedBlockId(nextSession.document.blocks[0]?.id ?? null);
+      setActiveComposerBlockId(null);
+      setCommentDrafts({});
       setRevisionPack(null);
       setSendState("idle");
     });
@@ -128,10 +119,6 @@ function App() {
   }, [session, selectedBlockId, statusFilter]);
 
   const summary = useMemo(() => summarizeSession(session), [session]);
-  const selectedBlock = useMemo(
-    () => session.document.blocks.find((block) => block.id === selectedBlockId) ?? null,
-    [session.document.blocks, selectedBlockId]
-  );
   const annotationsByBlock = useMemo(() => groupAnnotationsByBlock(session.annotations), [
     session.annotations
   ]);
@@ -143,25 +130,42 @@ function App() {
     [session.annotations, statusFilter]
   );
 
-  const canAddAnnotation =
-    Boolean(selectedBlock) && draft.title.trim().length > 0 && draft.body.trim().length > 0;
   const confirmedCount = summary.countsByStatus.confirmed;
   const canSend = Boolean(revisionPack && revisionPack.itemCount > 0);
   const revisionDeliveryMode = getRevisionDeliveryMode();
   const revisionActionLabel =
     revisionDeliveryMode === "send" ? "Send revision request" : "Copy revision request";
 
-  function handleAddAnnotation() {
-    if (!selectedBlock || !canAddAnnotation) return;
+  function handleOpenComposer(blockId: string) {
+    setSelectedBlockId(blockId);
+    setActiveComposerBlockId(blockId);
+  }
+
+  function handleCommentDraftChange(blockId: string, body: string) {
+    setCommentDrafts((current) => ({ ...current, [blockId]: body }));
+  }
+
+  function handleCancelComposer(blockId: string) {
+    setActiveComposerBlockId((current) => (current === blockId ? null : current));
+  }
+
+  function handleAddAnnotation(block: ReviewBlock) {
+    const body = commentDrafts[block.id]?.trim() ?? "";
+    if (!body) return;
     const next = addAnnotation(session, {
-      blockId: selectedBlock.id,
-      title: draft.title,
-      body: draft.body,
-      priority: draft.priority,
-      status: draft.status
+      blockId: block.id,
+      title: inferAnnotationTitle(body),
+      body,
+      priority: inferAnnotationPriority(body),
+      status: "confirmed"
     });
     setSession(next);
-    setDraft(EMPTY_DRAFT);
+    setCommentDrafts((current) => {
+      const { [block.id]: _removed, ...rest } = current;
+      return rest;
+    });
+    setSelectedBlockId(block.id);
+    setActiveComposerBlockId(null);
     setRevisionPack(null);
     setSendState("idle");
   }
@@ -203,7 +207,8 @@ function App() {
     activeHostSessionId.current = next.id;
     setSession(next);
     setSelectedBlockId(next.document.blocks[0]?.id ?? null);
-    setDraft(EMPTY_DRAFT);
+    setActiveComposerBlockId(null);
+    setCommentDrafts({});
     setRevisionPack(null);
     setSendState("idle");
     setImportError(null);
@@ -316,89 +321,17 @@ function App() {
         <DocumentPane
           blocks={session.document.blocks}
           selectedBlockId={selectedBlockId}
+          activeComposerBlockId={activeComposerBlockId}
+          commentDrafts={commentDrafts}
           annotationsByBlock={annotationsByBlock}
           onSelectBlock={setSelectedBlockId}
+          onOpenComposer={handleOpenComposer}
+          onCommentDraftChange={handleCommentDraftChange}
+          onCancelComposer={handleCancelComposer}
+          onAddAnnotation={handleAddAnnotation}
         />
 
         <aside className="side-panel">
-          <section className="panel-section selected-block">
-            <div className="section-heading">
-              <span>Selected block</span>
-              {selectedBlock ? <code>{selectedBlock.id}</code> : null}
-            </div>
-            {selectedBlock ? (
-              <>
-                <blockquote>{selectedBlock.quote}</blockquote>
-                <div className="draft-grid">
-                  <label>
-                    Title
-                    <input
-                      value={draft.title}
-                      onChange={(event) =>
-                        setDraft((current) => ({ ...current, title: event.target.value }))
-                      }
-                    />
-                  </label>
-                  <label>
-                    Priority
-                    <select
-                      value={draft.priority}
-                      onChange={(event) =>
-                        setDraft((current) => ({
-                          ...current,
-                          priority: event.target.value as AnnotationPriority
-                        }))
-                      }
-                    >
-                      <option value="P0">P0</option>
-                      <option value="P1">P1</option>
-                      <option value="P2">P2</option>
-                      <option value="P3">P3</option>
-                    </select>
-                  </label>
-                  <label>
-                    Status
-                    <select
-                      value={draft.status}
-                      onChange={(event) =>
-                        setDraft((current) => ({
-                          ...current,
-                          status: event.target.value as AnnotationStatus
-                        }))
-                      }
-                    >
-                      <option value="open">open</option>
-                      <option value="confirmed">confirmed</option>
-                      <option value="resolved">resolved</option>
-                      <option value="rejected">rejected</option>
-                    </select>
-                  </label>
-                  <label className="wide">
-                    Comment
-                    <textarea
-                      value={draft.body}
-                      rows={4}
-                      onChange={(event) =>
-                        setDraft((current) => ({ ...current, body: event.target.value }))
-                      }
-                    />
-                  </label>
-                </div>
-                <button
-                  className="primary-button full-width"
-                  type="button"
-                  disabled={!canAddAnnotation}
-                  onClick={handleAddAnnotation}
-                >
-                  <MessageSquarePlus size={16} />
-                  Add annotation
-                </button>
-              </>
-            ) : (
-              <p className="muted">No block selected.</p>
-            )}
-          </section>
-
           <section className="panel-section">
             <div className="section-heading">
               <span>Annotations</span>
@@ -582,33 +515,40 @@ function App() {
 function DocumentPane({
   blocks,
   selectedBlockId,
+  activeComposerBlockId,
+  commentDrafts,
   annotationsByBlock,
-  onSelectBlock
+  onSelectBlock,
+  onOpenComposer,
+  onCommentDraftChange,
+  onCancelComposer,
+  onAddAnnotation
 }: {
   blocks: ReviewBlock[];
   selectedBlockId: string | null;
+  activeComposerBlockId: string | null;
+  commentDrafts: Record<string, string>;
   annotationsByBlock: Map<string, Annotation[]>;
   onSelectBlock: (id: string) => void;
+  onOpenComposer: (id: string) => void;
+  onCommentDraftChange: (id: string, body: string) => void;
+  onCancelComposer: (id: string) => void;
+  onAddAnnotation: (block: ReviewBlock) => void;
 }) {
   return (
     <section className="document-pane" aria-label="Review document">
       {blocks.map((block) => {
         const annotations = annotationsByBlock.get(block.id) ?? [];
         const selected = block.id === selectedBlockId;
+        const composerOpen = block.id === activeComposerBlockId;
+        const commentDraft = commentDrafts[block.id] ?? "";
         return (
           <article
             key={block.id}
             className={`review-block ${selected ? "selected" : ""}`}
-            role="button"
-            tabIndex={0}
-            aria-pressed={selected}
+            role="group"
+            aria-label={`Review block ${block.id}`}
             onClick={() => onSelectBlock(block.id)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onSelectBlock(block.id);
-              }
-            }}
           >
             <div className="block-meta">
               <span>{block.type}</span>
@@ -625,7 +565,7 @@ function DocumentPane({
                 title="Annotate block"
                 onClick={(event) => {
                   event.stopPropagation();
-                  onSelectBlock(block.id);
+                  onOpenComposer(block.id);
                 }}
               >
                 <MessageSquarePlus size={15} />
@@ -640,11 +580,214 @@ function DocumentPane({
             ) : (
               <p>{block.text}</p>
             )}
+            {annotations.length > 0 ? (
+              <div className="block-annotation-previews" aria-label="Block annotations">
+                {annotations.map((annotation) => (
+                  <div key={annotation.id} className={`block-annotation-preview ${annotation.status}`}>
+                    <Flag size={13} />
+                    <span>{annotation.body}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {composerOpen ? (
+              <InlineAnnotationComposer
+                block={block}
+                value={commentDraft}
+                onChange={(body) => onCommentDraftChange(block.id, body)}
+                onCancel={() => onCancelComposer(block.id)}
+                onSubmit={() => onAddAnnotation(block)}
+              />
+            ) : null}
           </article>
         );
       })}
     </section>
   );
+}
+
+function InlineAnnotationComposer({
+  block,
+  value,
+  onChange,
+  onCancel,
+  onSubmit
+}: {
+  block: ReviewBlock;
+  value: string;
+  onChange: (body: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+}) {
+  const dictation = useSpeechDictation((transcript) => {
+    onChange(appendTranscript(value, transcript));
+  });
+  const canSubmit = value.trim().length > 0;
+
+  return (
+    <div
+      className="inline-composer"
+      role="form"
+      aria-label={`Add annotation to ${block.id}`}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <label>
+        Comment
+        <textarea
+          autoFocus
+          value={value}
+          rows={4}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </label>
+      <div className="inline-composer-actions">
+        <button
+          className={`secondary-button voice-button ${dictation.listening ? "listening" : ""}`}
+          type="button"
+          disabled={!dictation.supported}
+          onClick={dictation.toggle}
+          title={dictation.supported ? "Dictate comment" : "Voice input is not available in this browser"}
+        >
+          {dictation.listening ? <Square size={15} /> : <Mic size={15} />}
+          {dictation.listening ? "Stop" : "Dictate"}
+        </button>
+        <div className="inline-composer-spacer" />
+        <button className="secondary-button" type="button" onClick={onCancel}>
+          Cancel
+        </button>
+        <button className="primary-button" type="button" disabled={!canSubmit} onClick={onSubmit}>
+          <MessageSquarePlus size={16} />
+          Add comment
+        </button>
+      </div>
+      {dictation.message ? <p className="status-note">{dictation.message}</p> : null}
+    </div>
+  );
+}
+
+type SpeechRecognitionConstructor = new () => {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onresult:
+    | ((event: {
+        resultIndex: number;
+        results: ArrayLike<{
+          isFinal: boolean;
+          0?: { transcript: string };
+        }>;
+      }) => void)
+    | null;
+  abort: () => void;
+  start: () => void;
+  stop: () => void;
+};
+
+function useSpeechDictation(onTranscript: (transcript: string) => void): {
+  supported: boolean;
+  listening: boolean;
+  message: string | null;
+  toggle: () => void;
+} {
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null);
+  const [listening, setListening] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const supported = typeof window !== "undefined" && getSpeechRecognitionConstructor() !== null;
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
+
+  function toggle() {
+    const recognition = recognitionRef.current;
+    if (listening && recognition) {
+      recognition.stop();
+      setListening(false);
+      return;
+    }
+
+    const Recognition = getSpeechRecognitionConstructor();
+    if (!Recognition) {
+      setMessage("Voice input is not available in this browser.");
+      return;
+    }
+
+    const next = new Recognition();
+    recognitionRef.current = next;
+    next.lang = navigator.language || "zh-CN";
+    next.continuous = false;
+    next.interimResults = true;
+    next.maxAlternatives = 1;
+    next.onresult = (event) => {
+      let finalTranscript = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        if (result?.isFinal) {
+          finalTranscript += result[0]?.transcript ?? "";
+        }
+      }
+      if (finalTranscript.trim()) {
+        onTranscript(finalTranscript.trim());
+      }
+    };
+    next.onerror = (event) => {
+      setListening(false);
+      setMessage(event.error === "not-allowed" ? "Microphone permission was blocked." : "Voice input stopped.");
+    };
+    next.onend = () => {
+      setListening(false);
+    };
+
+    try {
+      next.start();
+      setMessage(null);
+      setListening(true);
+    } catch {
+      setListening(false);
+      setMessage("Voice input could not start.");
+    }
+  }
+
+  return { supported, listening, message, toggle };
+}
+
+function getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null {
+  const candidateWindow = window as Window & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
+  return candidateWindow.SpeechRecognition ?? candidateWindow.webkitSpeechRecognition ?? null;
+}
+
+function appendTranscript(current: string, transcript: string): string {
+  const trimmedCurrent = current.trimEnd();
+  if (!trimmedCurrent) return transcript;
+  return `${trimmedCurrent} ${transcript}`;
+}
+
+function inferAnnotationTitle(body: string): string {
+  const normalized = body.replace(/\s+/g, " ").trim();
+  const firstSentence = normalized.split(/[。.!?？]/)[0]?.trim() ?? normalized;
+  return firstSentence.slice(0, 42) || "Review comment";
+}
+
+function inferAnnotationPriority(body: string): AnnotationPriority {
+  const normalized = body.toLowerCase();
+  if (/崩溃|泄露|违法|数据丢失|security|privacy leak|crash|data loss|p0/.test(normalized)) {
+    return "P0";
+  }
+  if (/必须|严重|错误|不能|隐私|安全|阻塞|blocker|critical|important|p1/.test(normalized)) {
+    return "P1";
+  }
+  if (/小问题|建议|可选|polish|minor|p3/.test(normalized)) {
+    return "P3";
+  }
+  return "P2";
 }
 
 function AnnotationRow({

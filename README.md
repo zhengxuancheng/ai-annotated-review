@@ -85,6 +85,8 @@ The extension requests only:
 
 It imports only the text the user has selected in the active tab. It does not scrape the whole page.
 
+Per-block comments are added inline: click a block's comment button, type the comment, and add it. Title, priority, and confirmed status are generated locally so the main review flow does not ask the reviewer to fill metadata fields. Where Chrome exposes Web Speech recognition, the inline composer also offers a `Dictate` button for browser-provided voice input.
+
 ## CLI
 
 Build the CLI:

@@ -14,6 +14,8 @@ The app processes Markdown or plain text that the user explicitly pastes, select
 
 Inside the review UI or CLI session, the app processes annotations, statuses, priorities, selected blocks, and generated revision instructions created by the user.
 
+If the user clicks the browser voice-dictation button, the inline comment composer uses browser-provided Web Speech recognition when available. This project does not run its own speech server or store audio. Browser-provided speech recognition may be handled by the browser vendor according to that vendor's browser policy.
+
 ## Information Not Requested
 
 The app does not ask for credentials, payment information, government identifiers, precise location, full conversation history, raw chat transcripts, API keys, or account passwords.

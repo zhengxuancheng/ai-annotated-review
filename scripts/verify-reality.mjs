@@ -25,6 +25,11 @@ await mustContain(
   "Privacy model must preserve confirmed-only send behavior."
 );
 await mustContain(
+  "docs/privacy-model.md",
+  "browser's built-in Web Speech recognition",
+  "Privacy model must disclose browser-provided voice recognition."
+);
+await mustContain(
   "docs/development/verification-report.md",
   "Not Yet Verified",
   "Verification report must preserve unverified-live-ChatGPT caveats."
@@ -67,6 +72,9 @@ if (sendCallCount !== 1) {
 }
 if (!main.includes("Confirm send") || !main.includes("Confirm and send")) {
   failures.push("Widget must keep explicit confirmation UI before sending.");
+}
+if (!main.includes("SpeechRecognition") || !main.includes("InlineAnnotationComposer")) {
+  failures.push("Widget must keep inline comment composition with feature-detected speech input.");
 }
 
 const bridge = await readFile("apps/chatgpt-app/web/src/openaiBridge.ts", "utf8");

@@ -1,7 +1,7 @@
 # Verification Report
 
 Date: 2026-05-18
-Latest audit refresh: 2026-05-18 15:10 CST
+Latest audit refresh: 2026-05-18 16:06 CST
 
 ## Commands Run
 
@@ -29,6 +29,7 @@ PATH="/Users/liujinxing/.cache/codex-runtimes/codex-primary-runtime/dependencies
 APP_PUBLIC_BASE_URL=https://ai-annotated-review.liujinxingde2008.workers.dev APP_WIDGET_DOMAIN=https://ai-annotated-review.liujinxingde2008.workers.dev APP_PRIVACY_POLICY_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/privacy REMOTE_MCP_URL=https://ai-annotated-review.liujinxingde2008.workers.dev/mcp npm run verify:submission:strict
 Public GitHub release-prep checks
 Pivot implementation for public web app, Chrome side panel extension, and CLI adapter
+Inline per-block comment composer and voice-dictation UI update
 ```
 
 Results:
@@ -60,6 +61,9 @@ Results:
 - Public web app route `/app` is implemented in the Node server and Cloudflare Worker source. Local `smoke:mcp` now fetches `/app` and verifies the React root and app title. The UI falls back to copy/export outside a ChatGPT Apps SDK host.
 - Production Worker redeploy succeeded on 2026-05-18 with version ID `786b67cf-0556-4984-92f3-edba3d2e5e46`.
 - Production `/app` browser smoke passed: the page rendered, imported a test document, added one confirmed annotation, built a revision pack, and completed `Confirm and copy` with no relevant app console errors.
+- Inline composer update verification passed on 2026-05-18: `npm run verify` passed under Codex's bundled Node v24.14.0; `smoke:ui` added three annotations through the inline per-block comment flow and confirmed the revision pack still includes confirmed annotations only.
+- Browser visual QA confirmed that clicking a block comment button opens a composer directly inside that block. The composer exposes `Comment`, `Dictate`, `Cancel`, and `Add comment`; it does not ask the reviewer to fill title, priority, or status.
+- Production Worker redeploy succeeded after the inline composer update with version ID `5424b958-8c92-40f4-a4fd-b073780dc436`. Remote smoke passed and `/app` contains the updated `inline-composer`, `Dictate`, and `Add comment` UI.
 
 ## Skill-Driven Audit Refresh
 

@@ -73,23 +73,15 @@ try {
   await page.getByText("AI Annotated Review Demo Report").first().waitFor();
 
   await addAnnotation(page, 2, {
-    title: "Make pain concrete",
-    body: "Name the actual review failure mode instead of staying abstract.",
-    priority: "P1",
-    status: "confirmed"
+    body: "Name the actual review failure mode instead of staying abstract."
   });
   await addAnnotation(page, 4, {
-    title: "Keep boundary visible",
-    body: "State that the app renders its own iframe review UI and does not modify native ChatGPT bubbles.",
-    priority: "P0",
-    status: "confirmed"
+    body: "State that the app renders its own iframe review UI and does not modify native ChatGPT bubbles."
   });
   await addAnnotation(page, 6, {
-    title: "Reject extra scope",
-    body: "Do not add accounts or sync to this demo.",
-    priority: "P2",
-    status: "rejected"
+    body: "Do not add accounts or sync to this demo."
   });
+  await page.locator(".annotation-row").last().locator("select").nth(1).selectOption("rejected");
 
   const rowCount = await page.locator(".annotation-row").count();
   await page.getByRole("button", { name: /Build pack/ }).click();
@@ -104,9 +96,9 @@ try {
 
   const errorMessages = consoleMessages.filter((line) => line.startsWith("error:"));
   assert(rowCount === 3, `expected 3 annotation rows, got ${rowCount}`);
-  assert(packText.includes("Make pain concrete"), "pack missing first confirmed annotation");
-  assert(packText.includes("Keep boundary visible"), "pack missing second confirmed annotation");
-  assert(!packText.includes("Reject extra scope"), "pack included rejected annotation");
+  assert(packText.includes("Name the actual review failure mode"), "pack missing first confirmed annotation");
+  assert(packText.includes("renders its own iframe review UI"), "pack missing second confirmed annotation");
+  assert(!packText.includes("Do not add accounts or sync"), "pack included rejected annotation");
   assert(modalText === packText, "confirmation modal did not match pack preview");
   assert(sentFollowUp?.prompt === packText, "sendFollowUpMessage did not receive the pack prompt");
   assert(sentFollowUp?.scrollToBottom === true, "sendFollowUpMessage did not request scrollToBottom");
@@ -135,14 +127,12 @@ try {
 
 async function addAnnotation(page, blockIndex, annotation) {
   const targetBlock = page.locator(".review-block").nth(blockIndex);
-  const targetBlockId = await targetBlock.locator("code").first().innerText();
-  await targetBlock.click();
-  await page.locator(".selected-block code", { hasText: targetBlockId }).waitFor();
-  await page.locator("label").filter({ hasText: "Title" }).locator("input").fill(annotation.title);
-  await page.locator("label").filter({ hasText: "Comment" }).locator("textarea").fill(annotation.body);
-  await page.locator("label").filter({ hasText: "Priority" }).locator("select").selectOption(annotation.priority);
-  await page.locator("label").filter({ hasText: "Status" }).locator("select").selectOption(annotation.status);
-  await page.getByRole("button", { name: /Add annotation/ }).click();
+  await targetBlock.locator(".add-block-button").click();
+  const composer = targetBlock.locator(".inline-composer");
+  await composer.waitFor();
+  await composer.locator("label").filter({ hasText: "Comment" }).locator("textarea").fill(annotation.body);
+  await composer.getByRole("button", { name: /Add comment/ }).click();
+  await targetBlock.locator(".block-annotation-preview", { hasText: annotation.body }).waitFor();
 }
 
 async function waitForHttp(url) {

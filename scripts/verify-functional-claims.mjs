@@ -113,6 +113,10 @@ const bridgeSource = await readFile("apps/chatgpt-app/web/src/openaiBridge.ts", 
 mustContain(uiSource, "Confirm send", "widget must show explicit send confirmation");
 mustContain(uiSource, "Confirm and send", "widget must require explicit confirm-and-send action");
 mustContain(uiSource, "Copy revision request", "standalone web/extension modes must provide a copy action");
+mustContain(uiSource, "InlineAnnotationComposer", "widget must expose inline per-block annotation composition");
+mustContain(uiSource, "Add comment", "primary annotation flow must only require a comment");
+mustContain(uiSource, "Dictate", "primary annotation flow must expose voice dictation when available");
+mustContain(uiSource, "status: \"confirmed\"", "quick annotations must default to confirmed for revision packs");
 mustContain(uiSource, "revisionPack.prompt", "widget must preview the exact revision prompt before sending");
 mustContain(uiSource, "confirmed annotations only", "widget must disclose confirmed-only send behavior");
 mustContain(bridgeSource, "sendFollowUpMessage", "bridge must support ChatGPT follow-up send");

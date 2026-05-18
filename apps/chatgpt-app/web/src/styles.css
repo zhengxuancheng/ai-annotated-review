@@ -236,12 +236,6 @@ blockquote {
   padding: 9px 11px;
 }
 
-.draft-grid {
-  display: grid;
-  grid-template-columns: 1fr 104px;
-  gap: 10px;
-}
-
 label {
   display: flex;
   flex-direction: column;
@@ -329,6 +323,76 @@ button:disabled {
 .full-width {
   width: 100%;
   margin-top: 10px;
+}
+
+.block-annotation-previews {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.block-annotation-preview {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+  border-left: 3px solid #256f58;
+  border-radius: 5px;
+  background: #f4faf7;
+  color: #253044;
+  padding: 8px 9px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.block-annotation-preview svg {
+  margin-top: 2px;
+  color: #256f58;
+}
+
+.block-annotation-preview.rejected {
+  border-left-color: #b64a4a;
+  background: #fff6f6;
+}
+
+.block-annotation-preview.resolved {
+  border-left-color: #6f7a89;
+  background: #f7f8fa;
+}
+
+.inline-composer {
+  margin-top: 12px;
+  border: 1px solid #c7d6cf;
+  border-left: 3px solid #256f58;
+  border-radius: 7px;
+  background: #f8fcfa;
+  padding: 11px;
+  cursor: default;
+}
+
+.inline-composer textarea {
+  min-height: 120px;
+  resize: vertical;
+  background: #fff;
+}
+
+.inline-composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.inline-composer-spacer {
+  flex: 1 1 auto;
+}
+
+.voice-button.listening {
+  border-color: #1f5f9a;
+  background: #edf3fa;
+  color: #1f5f9a;
 }
 
 .pack-actions {
