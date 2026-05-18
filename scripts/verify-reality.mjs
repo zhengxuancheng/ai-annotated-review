@@ -76,6 +76,9 @@ if (!main.includes("Confirm send") || !main.includes("Confirm and send")) {
 if (!main.includes("SpeechRecognition") || !main.includes("InlineAnnotationComposer")) {
   failures.push("Widget must keep inline comment composition with feature-detected speech input.");
 }
+if (!main.includes("requestBrowserExtensionMicrophonePermission")) {
+  failures.push("Browser extension voice input must keep a separate microphone permission flow.");
+}
 
 const bridge = await readFile("apps/chatgpt-app/web/src/openaiBridge.ts", "utf8");
 if (!bridge.includes("sendFollowUpMessage") || !bridge.includes("ui/message")) {

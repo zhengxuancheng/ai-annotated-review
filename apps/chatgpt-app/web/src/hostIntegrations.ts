@@ -5,9 +5,13 @@ type ChromeTab = {
 };
 
 type ChromeApi = {
-  runtime?: { id?: string };
+  runtime?: {
+    id?: string;
+    getURL?: (path: string) => string;
+  };
   tabs?: {
     query: (queryInfo: { active: boolean; currentWindow: boolean }) => Promise<ChromeTab[]>;
+    create?: (createProperties: { url: string; active?: boolean }) => Promise<ChromeTab>;
   };
   scripting?: {
     executeScript: (injection: {
@@ -24,9 +28,29 @@ export type ActiveTabSelection = {
   url?: string;
 };
 
+export type MicrophonePermissionRequestResult = "granted" | "opened" | "unavailable";
+
 export function isBrowserExtensionHost(): boolean {
   const chrome = getChromeApi();
   return Boolean(chrome?.runtime?.id && chrome.tabs && chrome.scripting);
+}
+
+export async function requestBrowserExtensionMicrophonePermission(): Promise<MicrophonePermissionRequestResult> {
+  const chrome = getChromeApi();
+  if (!chrome?.runtime?.id || !chrome.tabs?.create) {
+    return "unavailable";
+  }
+
+  const state = await queryMicrophonePermissionState();
+  if (state === "granted") {
+    return "granted";
+  }
+
+  const permissionUrl =
+    chrome.runtime.getURL?.("voice-permission.html") ??
+    `chrome-extension://${chrome.runtime.id}/voice-permission.html`;
+  await chrome.tabs.create({ url: permissionUrl, active: true });
+  return "opened";
 }
 
 export async function readActiveTabSelection(): Promise<ActiveTabSelection> {
@@ -55,6 +79,20 @@ export async function readActiveTabSelection(): Promise<ActiveTabSelection> {
 
 function getChromeApi(): ChromeApi | undefined {
   return (globalThis as unknown as { chrome?: ChromeApi }).chrome;
+}
+
+async function queryMicrophonePermissionState(): Promise<PermissionState | "unknown"> {
+  try {
+    const permissions = navigator.permissions as
+      | (Permissions & {
+          query: (permissionDesc: { name: "microphone" }) => Promise<PermissionStatus>;
+        })
+      | undefined;
+    const status = await permissions?.query({ name: "microphone" });
+    return status?.state ?? "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 function sourceLabelForUrl(url: string | undefined): string {

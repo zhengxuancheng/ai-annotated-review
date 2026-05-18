@@ -150,6 +150,82 @@ try {
     `standalone browser console errors:\n${standaloneErrorMessages.join("\n")}`
   );
 
+  const extensionPage = await browser.newPage({ viewport: { width: 390, height: 860 } });
+  await extensionPage.addInitScript(() => {
+    const fakeChrome = {
+      runtime: {
+        id: "test-extension",
+        getURL(path) {
+          return `chrome-extension://test-extension/${path}`;
+        }
+      },
+      tabs: {
+        async query() {
+          return [{ id: 1, title: "ChatGPT", url: "https://chatgpt.com/" }];
+        },
+        async create(input) {
+          window.__openedMicrophonePermissionUrl = input.url;
+          return { id: 2, url: input.url };
+        }
+      },
+      scripting: {
+        async executeScript() {
+          return [{ result: "" }];
+        }
+      }
+    };
+    Object.assign(window.chrome, fakeChrome);
+    Object.defineProperty(navigator, "permissions", {
+      configurable: true,
+      value: {
+        async query(input) {
+          if (input.name === "microphone") return { state: "prompt" };
+          return { state: "granted" };
+        }
+      }
+    });
+    class FakeSpeechRecognition {
+      continuous = false;
+      interimResults = false;
+      maxAlternatives = 1;
+      lang = "en-US";
+      onend = null;
+      onerror = null;
+      onresult = null;
+      abort() {}
+      stop() {}
+      start() {
+        window.__speechRecognitionStarted = true;
+      }
+    }
+    Object.defineProperty(window, "webkitSpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition
+    });
+  });
+  await extensionPage.goto(URL, { waitUntil: "networkidle" });
+  await extensionPage.getByText("AI Annotated Review Demo Report").first().waitFor();
+  const extensionBlock = extensionPage.locator(".review-block").nth(2);
+  await extensionBlock.locator(".add-block-button").click();
+  const extensionComposer = extensionBlock.locator(".inline-composer");
+  await extensionComposer.waitFor();
+  await extensionComposer.getByRole("button", { name: /Dictate/ }).click();
+  const openedPermissionUrl = await extensionPage.evaluate(
+    () => window.__openedMicrophonePermissionUrl ?? null
+  );
+  const speechStartedBeforePermission = await extensionPage.evaluate(
+    () => Boolean(window.__speechRecognitionStarted)
+  );
+  assert(
+    openedPermissionUrl === "chrome-extension://test-extension/voice-permission.html",
+    `Dictate must open the extension microphone permission page before listening, got ${openedPermissionUrl}`
+  );
+  assert(
+    !speechStartedBeforePermission,
+    "Dictate must not start speech recognition before extension microphone permission is granted."
+  );
+  await extensionComposer.getByText(/microphone permission/i).waitFor();
+
   console.log(
     JSON.stringify(
       {
@@ -162,6 +238,7 @@ try {
         copyButtonLabelIsShort: true,
         copyToastAutoDismisses: true,
         copyModeSkipsSecondConfirmation: true,
+        extensionVoicePermissionPageOpens: true,
         bridgeEchoPreservesSelection: true,
         sendFollowUpMessageCalled: true,
         consoleErrors: errorMessages.length + standaloneErrorMessages.length

@@ -53,11 +53,16 @@ async function verifyBrowserExtension() {
     "browser extension must not request broad host access."
   );
   await access("apps/browser-extension/dist/service-worker.js");
+  await access("apps/browser-extension/dist/voice-permission.html");
 
   const hostIntegration = await readFile("apps/chatgpt-app/web/src/hostIntegrations.ts", "utf8");
   assert(
     hostIntegration.includes("window.getSelection()?.toString()"),
     "browser extension must read user-selected text only."
+  );
+  assert(
+    hostIntegration.includes("voice-permission.html"),
+    "browser extension must open a dedicated microphone permission page for voice dictation."
   );
   assert(
     !hostIntegration.includes("document.body.innerText") &&
@@ -66,7 +71,8 @@ async function verifyBrowserExtension() {
   );
   record("Browser extension manifest and selection boundary verified", {
     hostPermissions: manifest.host_permissions,
-    permissions: manifest.permissions
+    permissions: manifest.permissions,
+    microphonePermissionPage: "voice-permission.html"
   });
 }
 

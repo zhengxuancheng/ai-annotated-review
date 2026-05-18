@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enable Microphone</title>
+  </head>
+  <body>
+    <main class="permission-shell">
+      <section class="permission-card">
+        <p class="eyebrow">AI Annotated Review</p>
+        <h1>Enable microphone dictation</h1>
+        <p id="permission-status">
+          Chrome may block microphone prompts inside the side panel. This tab asks for the same
+          extension permission in a normal browser page.
+        </p>
+        <button id="request-microphone" type="button">Enable microphone</button>
+        <p class="secondary">
+          After allowing access, return to the review side panel and click Dictate again.
+        </p>
+      </section>
+    </main>
+    <script type="module" src="/src/voice-permission.ts"></script>
+  </body>
+</html>

@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: "index.html",
+        "voice-permission": "voice-permission.html",
         "service-worker": "src/service-worker.ts"
       },
       output: {

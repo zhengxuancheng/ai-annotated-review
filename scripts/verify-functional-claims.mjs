@@ -122,6 +122,11 @@ mustContain(uiSource, "getCopyToastLabel", "copy feedback must support locale-aw
 mustContain(uiSource, "InlineAnnotationComposer", "widget must expose inline per-block annotation composition");
 mustContain(uiSource, "Add comment", "primary annotation flow must only require a comment");
 mustContain(uiSource, "Dictate", "primary annotation flow must expose voice dictation when available");
+mustContain(
+  uiSource,
+  "requestBrowserExtensionMicrophonePermission",
+  "extension dictation must handle side-panel microphone permission separately"
+);
 mustContain(uiSource, "status: \"confirmed\"", "quick annotations must default to confirmed for revision packs");
 mustContain(uiSource, "scrollIntoView", "Build pack must bring the revision pack into view.");
 mustContain(uiSource, "handleRevisionAction", "copy/send revision action routing must be explicit.");

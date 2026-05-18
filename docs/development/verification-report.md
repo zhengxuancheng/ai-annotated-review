@@ -67,6 +67,7 @@ Results:
 - Copy-flow update verification passed on 2026-05-18: `smoke:ui` now checks a narrow standalone viewport where `Build pack` scrolls the `Copy` action into view, copy mode copies directly without opening the `Confirm send` modal, and the copied notice appears then auto-dismisses. Send mode inside the Apps SDK bridge still requires `Confirm send`.
 - Production Worker redeploy succeeded after the copy-flow update with version ID `e818f90e-249d-44f2-a4e9-ef3746a5774a`. Remote smoke passed; `/app` contains the scroll-to-pack behavior and no longer contains `Confirm and copy`.
 - Copy toast update deployed on 2026-05-18 with Worker version ID `f6eb819c-9fa0-4d97-a1f9-52cc8bdad0be`. Remote smoke passed; `/app` contains `copy-toast`, `Copied`, and `已复制`, and no longer contains the long `Copy revision request` button label.
+- Extension voice-input permission update verification passed on 2026-05-18: `smoke:ui` now simulates a Chrome extension side panel with microphone permission still at `prompt`, clicks `Dictate`, verifies that `voice-permission.html` opens, and verifies speech recognition does not start before extension microphone permission is granted. `verify:adapters` verifies the built extension contains `dist/voice-permission.html`. Production Worker redeploy succeeded with version ID `9e0e07cc-d94e-4b0c-a3b2-2e7381f1c654`; remote smoke passed and `/app` contains the updated microphone permission message.
 
 ## Skill-Driven Audit Refresh
 

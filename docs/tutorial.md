@@ -84,6 +84,8 @@ The side panel imports only the text currently selected by the user in the activ
 
 The primary review flow asks only for the comment. The app generates a short title, priority, and confirmed status locally; the annotation list still allows later status or priority edits when needed.
 
+If `Dictate` needs microphone permission, the extension opens an `Enable microphone dictation` tab. Allow microphone access there, return to the side panel, and click `Dictate` again.
+
 After building the revision pack, copy or export it and paste it back into ChatGPT or Claude manually.
 
 ## 4. CLI Adapter

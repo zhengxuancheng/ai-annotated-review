@@ -52,7 +52,11 @@ import {
   subscribeToReviewSession
 } from "./openaiBridge.js";
 import { createSampleSession } from "./sampleSession.js";
-import { isBrowserExtensionHost, readActiveTabSelection } from "./hostIntegrations.js";
+import {
+  isBrowserExtensionHost,
+  readActiveTabSelection,
+  requestBrowserExtensionMicrophonePermission
+} from "./hostIntegrations.js";
 import "./styles.css";
 
 type SendState = "idle" | "sent" | "copied" | "fallback" | "error";
@@ -736,7 +740,7 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
     };
   }, []);
 
-  function toggle() {
+  async function toggle() {
     const recognition = recognitionRef.current;
     if (listening && recognition) {
       recognition.stop();
@@ -747,6 +751,14 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
     const Recognition = getSpeechRecognitionConstructor();
     if (!Recognition) {
       setMessage("Voice input is not available in this browser.");
+      return;
+    }
+
+    const extensionPermission = await ensureExtensionMicrophonePermission();
+    if (extensionPermission === "opened") {
+      setMessage(
+        "A microphone permission tab opened. Allow access there, then return here and click Dictate again."
+      );
       return;
     }
 
@@ -770,7 +782,11 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
     };
     next.onerror = (event) => {
       setListening(false);
-      setMessage(event.error === "not-allowed" ? "Microphone permission was blocked." : "Voice input stopped.");
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        void handleSpeechPermissionBlocked();
+        return;
+      }
+      setMessage("Voice input stopped.");
     };
     next.onend = () => {
       setListening(false);
@@ -787,6 +803,22 @@ function useSpeechDictation(onTranscript: (transcript: string) => void): {
   }
 
   return { supported, listening, message, toggle };
+
+  async function handleSpeechPermissionBlocked() {
+    const extensionPermission = await requestBrowserExtensionMicrophonePermission();
+    if (extensionPermission === "opened") {
+      setMessage(
+        "A microphone permission tab opened. Allow access there, then return here and click Dictate again."
+      );
+      return;
+    }
+    setMessage("Microphone permission was blocked.");
+  }
+}
+
+async function ensureExtensionMicrophonePermission(): Promise<"granted" | "opened" | "unavailable"> {
+  if (!isBrowserExtensionHost()) return "unavailable";
+  return requestBrowserExtensionMicrophonePermission();
 }
 
 function getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null {
